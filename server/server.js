@@ -25,6 +25,7 @@ const streakRoutes      = require("./routes/streaks");
 const profileRoutes     = require("./routes/profile");
 const progressRoutes    = require("./routes/progress");
 const friendRoutes      = require("./routes/friends");
+const questionRoutes    = require("./routes/questions");
 
 /* ─── CORS origin list ─────────────────────────────────────────────────────── */
 const allowedOrigins = [
@@ -90,6 +91,7 @@ app.use("/api/battles",     battleRoutes);
 app.use("/api/streaks",     streakRoutes);
 app.use("/api/profile",     profileRoutes);
 app.use("/api/friends",     friendRoutes);
+app.use("/api/questions",   questionRoutes);
 
 /* ─── Static files (production only) ───────────────────────────────────────── */
 if (process.env.NODE_ENV === "production") {

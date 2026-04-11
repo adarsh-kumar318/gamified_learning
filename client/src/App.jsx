@@ -16,6 +16,7 @@ import Social           from "./components/Social";
 import BackgroundLayer  from "./components/BackgroundLayer";
 import MatchmakingView  from "./components/MatchmakingView";
 import BattleArena      from "./components/BattleArena";
+import SubjectPicker    from "./components/SubjectPicker";
 
 import {
   fetchProfile,
@@ -56,11 +57,12 @@ export default function App() {
   const [showProfile,        setShowProfile]        = useState(false);
 
   /* Socket & battle state */
-  const [socket,       setSocket]       = useState(null);
-  const [battleSocket, setBattleSocket] = useState(null);
-  const [isSearching,  setIsSearching]  = useState(false);
-  const [battleData,   setBattleData]   = useState(null);
+  const [socket,            setSocket]            = useState(null);
+  const [battleSocket,      setBattleSocket]      = useState(null);
+  const [isSearching,       setIsSearching]       = useState(false);
+  const [battleData,        setBattleData]        = useState(null);
   const [socialNotification, setSocialNotification] = useState(false);
+  const [showSubjectPicker, setShowSubjectPicker] = useState(false);
 
   /* Ref to always have the latest userData without stale closures */
   const latestUD = useRef(INITIAL_USER);
@@ -173,19 +175,31 @@ export default function App() {
   };
 
   /* ── Battle handlers ─────────────────────────────────────────────────────── */
+  // Step 1: Show subject picker
   const handleStartMatchmaking = () => {
     if (!battleSocket) return;
     if (userData.xp < 50) {
       showXpPopup("⚠️ MINIMUM 50 XP REQUIRED FOR BATTLE");
       return;
     }
-    battleSocket.emit("start_matchmaking", { userId: userData._id, username: userData.username });
+    setShowSubjectPicker(true);
+  };
+
+  // Step 2: Subject chosen → enter queue
+  const handleSubjectSelected = (subject) => {
+    setShowSubjectPicker(false);
+    battleSocket.emit("start_matchmaking", {
+      userId: userData._id,
+      username: userData.username,
+      subject, // null = mixed mode
+    });
     setIsSearching(true);
   };
 
   const handleCancelMatchmaking = () => {
     battleSocket?.emit("cancel_matchmaking", userData._id);
     setIsSearching(false);
+    setShowSubjectPicker(false);
   };
 
   /* ── Quest handlers ──────────────────────────────────────────────────────── */
@@ -282,6 +296,15 @@ export default function App() {
   /* ── Render ──────────────────────────────────────────────────────────────── */
   return (
     <>
+      {/* ─── Subject Picker Modal ────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showSubjectPicker && (
+          <SubjectPicker
+            onSelect={handleSubjectSelected}
+            onClose={() => setShowSubjectPicker(false)}
+          />
+        )}
+      </AnimatePresence>
       {/* ─── Profile Modal ──────────────────────────────────────────────── */}
       {showProfile && (
         <div

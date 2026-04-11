@@ -135,22 +135,24 @@ const submitAnswer = async (req, res) => {
       });
     }
 
-    // Award XP
-    const xpReward = 20; 
+    // Award XP & Coins
+    const xpReward = 20;
+    const coinReward = 15;          // per correct answer
+    const completionBonus = 150;    // on quest completion
     user.xp += xpReward;
-    user.coins += 5; 
-    
+    user.coins += coinReward;
+
     // Update Progress
     if (!progress.answers.some(a => a.questionIndex === questionIndex)) {
         progress.answers.push({ questionIndex, selectedOption });
         progress.currentQuestionIndex = Math.max(progress.currentQuestionIndex, questionIndex + 1);
         progress.percentage = Math.round((progress.answers.length / progress.shuffledQuestions.length) * 100);
     }
-    
+
     if (progress.percentage >= 80 && !progress.isCompleted) {
       progress.isCompleted = true;
       user.xp += 100;
-      user.coins += 50;
+      user.coins += completionBonus;
     }
 
     await Promise.all([user.save(), progress.save()]);
@@ -160,7 +162,7 @@ const submitAnswer = async (req, res) => {
     res.json({
       correct: true,
       xpEarned: xpReward,
-      coinsEarned: 5,
+      coinsEarned: coinReward,
       percentage: progress.percentage,
       isCompleted: progress.isCompleted,
       energy: user.energy,
