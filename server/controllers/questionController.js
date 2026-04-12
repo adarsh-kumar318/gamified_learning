@@ -1,66 +1,48 @@
-const BattleQuestion = require('../models/BattleQuestion');
+const { db } = require('../utils/firebase');
 
 const SUBJECTS = ['Agentic AI', 'DSA', 'Mathematics', 'Science'];
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
 
-/**
- * GET /api/questions
- * Query params:
- *   subject     — one of SUBJECTS (optional, random if omitted)
- *   difficulty  — easy | medium | hard (optional)
- *   limit       — number of questions to return (default: 5)
- *   mixed       — "true" to fetch from all subjects randomly
- */
+// Helper to shuffle
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const getQuestions = async (req, res) => {
   try {
     let { subject, difficulty, limit = 5, mixed } = req.query;
     limit = Math.min(parseInt(limit) || 5, 20); // max 20
 
-    const filter = {};
+    let questionsQuery = db.collection('battleQuestions');
 
-    if (mixed === 'true') {
-      // Mixed mode: random subject selection per question — no filter needed
-    } else {
-      // Subject filter
+    if (mixed !== 'true') {
       if (subject && SUBJECTS.includes(subject)) {
-        filter.subject = subject;
+        questionsQuery = questionsQuery.where('subject', '==', subject);
       } else if (subject) {
-        return res.status(400).json({
-          error: `Invalid subject. Choose from: ${SUBJECTS.join(', ')}`
-        });
+        return res.status(400).json({ error: `Invalid subject. Choose from: ${SUBJECTS.join(', ')}` });
       }
-
-      // Difficulty filter
       if (difficulty && DIFFICULTIES.includes(difficulty)) {
-        filter.difficulty = difficulty;
+        questionsQuery = questionsQuery.where('difficulty', '==', difficulty);
       }
     }
 
-    // Fetch random questions using MongoDB aggregation
-    const questions = await BattleQuestion.aggregate([
-      { $match: filter },
-      { $sample: { size: limit } },
-      {
-        $project: {
-          _id: 0,
-          id: '$_id',
-          subject: 1,
-          topic: 1,
-          question: 1,
-          options: 1,
-          correctAnswer: 1,
-          difficulty: 1,
-          explanation: 1,
-        }
-      }
-    ]);
+    const snapshot = await questionsQuery.get();
+    let allQuestions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    if (questions.length === 0) {
+    if (allQuestions.length === 0) {
       return res.status(404).json({
         error: 'No questions found for the given filters.',
         hint: 'Run: node server/scripts/seedBattleQuestions.js'
       });
     }
+
+    // In-memory random sample since Firestore lacks $sample
+    const questions = shuffleArray(allQuestions).slice(0, limit);
 
     res.json({
       total: questions.length,
@@ -74,32 +56,31 @@ const getQuestions = async (req, res) => {
   }
 };
 
-/**
- * GET /api/questions/subjects
- * Returns available subjects and count of questions per subject
- */
 const getSubjectStats = async (req, res) => {
   try {
-    const stats = await BattleQuestion.aggregate([
-      {
-        $group: {
-          _id: '$subject',
-          total: { $sum: 1 },
-          easy:   { $sum: { $cond: [{ $eq: ['$difficulty', 'easy']   }, 1, 0] } },
-          medium: { $sum: { $cond: [{ $eq: ['$difficulty', 'medium'] }, 1, 0] } },
-          hard:   { $sum: { $cond: [{ $eq: ['$difficulty', 'hard']   }, 1, 0] } },
+    const snapshot = await db.collection('battleQuestions').get();
+    const statsMap = {};
+    
+    SUBJECTS.forEach(s => {
+      statsMap[s] = { total: 0, byDifficulty: { easy: 0, medium: 0, hard: 0 } };
+    });
+
+    snapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const sub = data.subject;
+      const diff = data.difficulty;
+      
+      if (statsMap[sub]) {
+        statsMap[sub].total += 1;
+        if (diff && statsMap[sub].byDifficulty[diff] !== undefined) {
+           statsMap[sub].byDifficulty[diff] += 1;
         }
-      },
-      { $sort: { _id: 1 } }
-    ]);
+      }
+    });
 
     res.json({
       subjects: SUBJECTS,
-      stats: stats.map(s => ({
-        subject: s._id,
-        total: s.total,
-        byDifficulty: { easy: s.easy, medium: s.medium, hard: s.hard }
-      }))
+      stats: Object.keys(statsMap).map(k => ({ subject: k, total: statsMap[k].total, byDifficulty: statsMap[k].byDifficulty }))
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch subject stats.' });

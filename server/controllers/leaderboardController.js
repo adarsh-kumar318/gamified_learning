@@ -26,7 +26,7 @@ const globalLeaderboard = async (req, res) => {
     res.json(lb);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Could not fetch leaderboard.' });
+    res.status(500).json({ error: 'Could not fetch leaderboard: ' + err.message });
   }
 };
 

@@ -1,8 +1,5 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
-const Quest    = require('../models/Quest');
-
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/leveluplearning';
+const { db } = require('../utils/firebase'); // Reusing the utils/firebase for admin SDK
 
 const generateQuestions = (path, questLevel, count = 5) => {
   const questions = [];
@@ -23,7 +20,7 @@ const generateQuestions = (path, questLevel, count = 5) => {
       question: `[${path.toUpperCase()} - Phase ${questLevel}] Quest ${i}: Identify the optimal strategy for ${path} in this tier.`,
       options: finalOptions,
       correctAnswer: correctIdx,
-      xpReward: i === 5 ? 100 : 20, // Final question of level gives more
+      xpReward: i === 5 ? 100 : 20, 
       explanation: `Core principles of ${path} demand mastery of ${finalOptions[correctIdx].split(': ')[1]}.`
     });
   }
@@ -32,10 +29,15 @@ const generateQuestions = (path, questLevel, count = 5) => {
 
 const seedQuests = async () => {
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log('Connected to MongoDB for Cinematic RPG Seeding... 🧬');
+    console.log('Connected to Firestore for Cinematic RPG Seeding... 🧬');
 
-    await Quest.deleteMany({});
+    // Delete existing quests using a batch (for hackathon size it's fine natively looping)
+    const existingQuests = await db.collection('quests').get();
+    let batch = db.batch();
+    existingQuests.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
 
     const paths = ['webdev', 'aptitude', 'english', 'datascience', 'agenticai', 'dsa', 'mathematics', 'chemistry', 'physics'];
     const totalLevelsPerPath = 50;
@@ -60,7 +62,22 @@ const seedQuests = async () => {
       }
     });
 
-    await Quest.insertMany(quests);
+    console.log(`Saving ${quests.length} Quests to Firestore... this may take a moment.`);
+    
+    // Firestore allows batch operations of 500 documents at a time
+    for (let i = 0; i < quests.length; i += 500) {
+        const chunk = quests.slice(i, i + 500);
+        let writeBatch = db.batch();
+        
+        chunk.forEach(q => {
+            const docRef = db.collection('quests').doc(q.id);
+            writeBatch.set(docRef, q);
+        });
+        
+        await writeBatch.commit();
+        console.log(`Committed chunk ${i} to ${i + chunk.length}`);
+    }
+
     console.log(`✅ Successfully seeded ${quests.length} Quests (5 questions each).`);
     process.exit(0);
   } catch (err) {
