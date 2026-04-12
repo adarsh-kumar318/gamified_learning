@@ -1,84 +1,85 @@
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
-  username:    { type: String, required: true, unique: true, trim: true },
-  email:       { type: String, required: true, unique: true, trim: true },
-  password:    { type: String, required: true },
-  uid:         { type: String, unique: true, sparse: true }, // Unique human-readable ID (#LVL-XXXXXX)
-  avatarId:    { type: Number, default: null },
-  clerkId:     { type: String, unique: true, sparse: true }, // Legacy Clerk support
-  
-  // Gamification
-  xp:          { type: Number, default: 0 },
-  coins:       { type: Number, default: 0 },
-  totalCoins:  { type: Number, default: 0 },
-  level:       { type: Number, default: 1 },
-
-  // RPG Systems
-  energy:          { type: Number, default: 10 },
-  maxEnergy:       { type: Number, default: 10 },
-  energyRefillAt:  { type: Date,   default: Date.now },
-
-  // Streak
-  streak:          { type: Number, default: 1 },
-  lastActiveDate:  { type: String, default: '' },   // YYYY-MM-DD
-  longestStreak:   { type: Number, default: 1 },
-
-  // Quests & progress
-  completedQuests: [{ id: String, pathId: String, completedAt: Date, percentage: Number }],
-  totalQuestsCompleted: { type: Number, default: 0 },
-  perfectAnswers:  { type: Number, default: 0 },
-  weeklyXp:        { type: [Number], default: [0, 0, 0, 0, 0, 0, 0] },
-
-  // Badges
-  earnedBadges: { type: [String], default: [] },
-  
-  // Social
-  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-}, { timestamps: true });
-
-// Pre-save hook for password hashing
-userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
+const createDefaultUser = async (data) => {
   const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
+  const hashedPassword = data.password ? await bcrypt.hash(data.password, salt) : null;
 
-// Compare password method
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  return {
+    username: data.username,
+    email: data.email,
+    password: hashedPassword, // Hashed
+    uid: data.uid,
+    avatarId: null,
+    clerkId: data.clerkId || null,
+
+    // Gamification
+    xp: 0,
+    coins: 0,
+    totalCoins: 0,
+    level: 1,
+
+    // RPG Systems
+    energy: 10,
+    maxEnergy: 10,
+    energyRefillAt: new Date().toISOString(),
+
+    // Streak
+    streak: 1,
+    lastActiveDate: new Date().toISOString().slice(0, 10),
+    longestStreak: 1,
+
+    // Quests & progress
+    completedQuests: [],
+    totalQuestsCompleted: 0,
+    perfectAnswers: 0,
+    weeklyXp: [0, 0, 0, 0, 0, 0, 0],
+
+    // Badges & Social
+    earnedBadges: [],
+    friends: [],
+    
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
 };
 
-// Energy Refill Logic (Faster for Testing)
-userSchema.methods.calculateEnergyRefill = function () {
+const matchPassword = async (enteredPassword, storedPassword) => {
+  return await bcrypt.compare(enteredPassword, storedPassword);
+};
+
+// Returns a user object with energy calculation applied
+const calculateEnergyRefill = (user) => {
   const REFILL_RATE_MS = 5 * 60 * 1000; // 5 minutes
-  if (this.energy >= this.maxEnergy) {
-    this.energyRefillAt = null;
-    return;
+  if (user.energy >= user.maxEnergy) {
+    user.energyRefillAt = null;
+    return user;
   }
 
-  if (!this.energyRefillAt) {
-    this.energyRefillAt = new Date(Date.now() + REFILL_RATE_MS);
-    return;
+  if (!user.energyRefillAt) {
+    user.energyRefillAt = new Date(Date.now() + REFILL_RATE_MS).toISOString();
+    return user;
   }
 
   const now = new Date();
-  while (now >= this.energyRefillAt && this.energy < this.maxEnergy) {
-    this.energy += 1;
-    this.energyRefillAt = new Date(this.energyRefillAt.getTime() + REFILL_RATE_MS);
+  let refillAt = new Date(user.energyRefillAt);
+  
+  while (now >= refillAt && user.energy < user.maxEnergy) {
+    user.energy += 1;
+    refillAt = new Date(refillAt.getTime() + REFILL_RATE_MS);
   }
 
-  if (this.energy >= this.maxEnergy) {
-    this.energyRefillAt = null;
+  if (user.energy >= user.maxEnergy) {
+    user.energyRefillAt = null;
+  } else {
+    user.energyRefillAt = refillAt.toISOString();
   }
+  return user;
 };
 
-// Hide password in JSON responses
-userSchema.methods.toPublic = function () {
-  const obj = this.toObject();
+const toPublic = (user) => {
+  const obj = { ...user };
   delete obj.password;
   return obj;
 };
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = { createDefaultUser, matchPassword, calculateEnergyRefill, toPublic };

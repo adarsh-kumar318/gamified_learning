@@ -1,17 +1,14 @@
-// utils/db.js — MongoDB connection
-const mongoose = require('mongoose');
+// utils/db.js — Replaced by Firebase
+const { db } = require('./firebase');
 
 const connectDB = async () => {
   try {
-    console.log('📡 Attempting MongoDB connection...');
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 10000, // Timeout after 10 seconds
-    });
-    console.log(`✅ MongoDB connected: ${conn.connection.name} @ ${conn.connection.host || 'localhost'}`);
+    // Just verifying firestore is accessible
+    await db.collection('_system_').doc('ping').set({ lastPing: new Date() });
+    console.log('✅ Firestore connected successfully');
   } catch (err) {
-    console.error('❌ MongoDB connection error! Check your IP allowlist and credentials.');
+    console.error('❌ Firestore connection error! Check your credentials.');
     console.error(`Message: ${err.message}`);
-    // We don't exit(1) anymore, so the API stays alive to report the issue
   }
 };
 

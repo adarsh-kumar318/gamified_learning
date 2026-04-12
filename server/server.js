@@ -8,6 +8,8 @@ const rateLimit = require("express-rate-limit");
 const { Server } = require("socket.io");
 
 const connectDB    = require("./utils/db");
+require("./utils/firebase"); // Initialize Firebase Admin SDK
+
 const battleSocket = require("./services/battleSocket");
 const friendSocket = require("./services/friendSocket");
 const cronJobs     = require("./services/cronJobs");

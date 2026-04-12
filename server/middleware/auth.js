@@ -1,6 +1,7 @@
 // middleware/auth.js — Manual JWT Authentication middleware
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { db } = require('../utils/firebase');
+const { calculateEnergyRefill } = require('../models/User');
 
 const generateUID = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
@@ -22,22 +23,33 @@ const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Get user from DB
-      const user = await User.findById(decoded.id).select('-password');
-      if (!user) {
+      const userRef = db.collection('users').doc(decoded.id);
+      const userDoc = await userRef.get();
+      
+      if (!userDoc.exists) {
         return res.status(401).json({ error: 'User not found. Please login again.' });
       }
+
+      let user = { _id: userDoc.id, ...userDoc.data() };
+
+      let updated = false;
 
       // ── UID Migration (Assign if missing) ───────────────────────────────────
       if (!user.uid) {
         user.uid = generateUID();
-        await user.save();
+        updated = true;
         console.log(`🔨 Assigned new UID [${user.uid}] to user: ${user.username}`);
       }
 
       // ── Energy Refill Logic ───────────────────────────────────────────────
-      if (typeof user.calculateEnergyRefill === 'function') {
-        user.calculateEnergyRefill();
-        await user.save();
+      const energyBefore = user.energy;
+      user = calculateEnergyRefill(user);
+      if (user.energy !== energyBefore || user.energyRefillAt) {
+        updated = true;
+      }
+
+      if (updated) {
+        await userRef.update(user);
       }
 
       req.user = user;

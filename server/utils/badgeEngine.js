@@ -35,4 +35,4 @@ const checkNewBadges = (user) => {
   return newlyUnlocked;
 };
 
-module.exports = { checkNewBadges };
+module.exports = { checkNewBadges, BADGE_DEFINITIONS };

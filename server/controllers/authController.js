@@ -1,5 +1,6 @@
 const jwt    = require('jsonwebtoken');
-const User   = require('../models/User');
+const { createDefaultUser, matchPassword, calculateEnergyRefill, toPublic } = require('../models/User');
+const { db } = require('../utils/firebase');
 const { generateUID } = require('../middleware/auth');
 const { checkNewBadges } = require('../utils/badgeEngine');
 
@@ -16,30 +17,27 @@ const register = async (req, res) => {
     if (!username || !password || !email)
       return res.status(400).json({ error: 'Username, email and password are required.' });
 
-    if (await User.findOne({ username }))
+    const usernameQuery = await db.collection('users').where('username', '==', username).limit(1).get();
+    if (!usernameQuery.empty)
       return res.status(400).json({ error: 'Username already taken.' });
 
-    if (await User.findOne({ email }))
+    const emailQuery = await db.collection('users').where('email', '==', email).limit(1).get();
+    if (!emailQuery.empty)
       return res.status(400).json({ error: 'Email already registered.' });
 
-    
-    const user = await User.create({ 
+    const userObj = await createDefaultUser({ 
       username, 
       email, 
       password, 
-      uid: generateUID(),
-      xp: 0,
-      coins: 0,
-      totalCoins: 0,
-      level: 1,
-      streak: 1,
-      lastActiveDate: todayStr(),
-      completedQuests: [],
-      earnedBadges: []
+      uid: generateUID()
     });
 
-    const token = signToken(user._id);
-    res.status(201).json({ user: user.toPublic(), token });
+    const userRef = db.collection('users').doc();
+    userObj._id = userRef.id;
+    await userRef.set(userObj);
+
+    const token = signToken(userRef.id);
+    res.status(201).json({ user: toPublic(userObj), token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error during registration.' });
@@ -53,8 +51,15 @@ const login = async (req, res) => {
     if (!username || !password)
       return res.status(400).json({ error: 'Username and password are required.' });
 
-    const user = await User.findOne({ username });
-    if (!user || !(await user.matchPassword(password))) {
+    const userQuery = await db.collection('users').where('username', '==', username).limit(1).get();
+    if (userQuery.empty) {
+      return res.status(400).json({ error: 'Invalid username or password.' });
+    }
+
+    const userDoc = userQuery.docs[0];
+    let user = { _id: userDoc.id, ...userDoc.data() };
+
+    if (!(await matchPassword(password, user.password))) {
       return res.status(400).json({ error: 'Invalid username or password.' });
     }
 
@@ -69,15 +74,15 @@ const login = async (req, res) => {
     }
     user.lastActiveDate = today;
     
-    user.calculateEnergyRefill();
+    user = calculateEnergyRefill(user);
     
     // Check for badges (e.g. streaks) 🏆
     checkNewBadges(user);
 
-    await user.save();
+    await db.collection('users').doc(user._id).update(user);
 
     const token = signToken(user._id);
-    res.json({ user: user.toPublic(), token });
+    res.json({ user: toPublic(user), token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error during login.' });
@@ -86,19 +91,19 @@ const login = async (req, res) => {
 
 // GET /api/auth/me
 const getMe = async (req, res) => {
-  // req.user is populated by protect middleware
-  req.user.calculateEnergyRefill();
-  await req.user.save();
-  res.json(req.user.toPublic());
+  let user = calculateEnergyRefill(req.user);
+  await db.collection('users').doc(user._id).update(user);
+  res.json(toPublic(user));
 };
 
 // PATCH /api/auth/avatar
 const updateAvatar = async (req, res) => {
   try {
     const { avatarId } = req.body;
-    req.user.avatarId = avatarId;
-    await req.user.save();
-    res.json(req.user.toPublic());
+    let user = req.user;
+    user.avatarId = avatarId;
+    await db.collection('users').doc(user._id).update({ avatarId });
+    res.json(toPublic(user));
   } catch (err) {
     res.status(500).json({ error: 'Could not update avatar.' });
   }
@@ -117,20 +122,23 @@ const refillEnergy = async (req, res) => {
     if (user.coins < REFILL_COST) {
       // Pity refill for dev/low coins
       user.energy = 10;
-      await user.save();
+      await db.collection('users').doc(user._id).update({ energy: 10 });
       return res.json({ 
         message: "The Innkeeper takes pity on you. Rest well, hero! 🏮", 
-        user: user.toPublic() 
+        user: toPublic(user) 
       });
     }
 
     user.coins -= REFILL_COST;
     user.energy = 10;
-    await user.save();
+    await db.collection('users').doc(user._id).update({ 
+      coins: user.coins, 
+      energy: user.energy 
+    });
 
     res.json({ 
       message: "Zzz... You feel refreshed! Stamina restored. ⚡", 
-      user: user.toPublic() 
+      user: toPublic(user) 
     });
   } catch (err) {
     res.status(500).json({ error: "The Inn is fully booked! (Server error)" });

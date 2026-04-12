@@ -1,28 +1,33 @@
-const User     = require('../models/User');
-const Quest    = require('../models/Quest');
-const Progress = require('../models/Progress');
-const XPLog    = require('../models/XPLog');
+const { db, admin } = require('../utils/firebase');
 const { checkNewBadges } = require('../utils/badgeEngine');
+const { toPublic } = require('../models/User');
 
 // GET /api/quests
 // Lists all quests with their current progress for the user
 const listQuests = async (req, res) => {
   try {
-    const quests = await Quest.find({
-      $or: [
-        { isAI: { $ne: true } }, 
-        { createdBy: req.user._id }
-      ]
-    }).sort({ level: 1 });
-    const progress = await Progress.find({ userId: req.user._id });
+    const questsQuery = await db.collection('quests').get();
+    let quests = questsQuery.docs.map(d => ({ _id: d.id, ...d.data() }));
+
+    // Memory filter to act like Mongoose $or: [ { isAI: { $ne: true } }, { createdBy: req.user._id } ]
+    quests = quests.filter(q => q.isAI !== true || q.createdBy === req.user._id);
+
+    // Sort by level ascending
+    quests.sort((a, b) => (a.level || 0) - (b.level || 0));
+
+    const progressQuery = await db.collection('progress')
+      .where('userId', '==', req.user._id)
+      .get();
+    
+    const progress = progressQuery.docs.map(d => d.data());
 
     // Merge progress into quest metadata
     const questsWithProgress = quests.map(q => {
       const p = progress.find(pr => pr.questId === q.id);
       return {
-        ...q.toObject(),
+        ...q,
         completedCount: p ? (p.answers ? p.answers.length : 0) : 0,
-        totalQuestions: q.questions.length,
+        totalQuestions: q.questions ? q.questions.length : 0,
         isCompleted: p ? p.isCompleted : false,
         percentage: p ? p.percentage : 0,
         questions: undefined // Don't send questions in list
@@ -50,24 +55,29 @@ const shuffleArray = (array) => {
 // Fetches a single quest with randomized questions and options (answers stripped)
 const getQuest = async (req, res) => {
   try {
-    const quest = await Quest.findOne({ id: req.params.id });
-    if (!quest) return res.status(404).json({ error: 'Quest not found.' });
+    const questQuery = await db.collection('quests').where('id', '==', req.params.id).limit(1).get();
+    if (questQuery.empty) return res.status(404).json({ error: 'Quest not found.' });
+    
+    const quest = { _id: questQuery.docs[0].id, ...questQuery.docs[0].data() };
 
     // Find or create progress record
-    let progress = await Progress.findOne({ userId: req.user._id, questId: quest.id });
-    if (!progress) {
-      progress = await Progress.create({ userId: req.user._id, questId: quest.id });
+    const progressId = `${req.user._id}_${quest.id}`;
+    let progressDoc = await db.collection('progress').doc(progressId).get();
+    let progress;
+
+    if (!progressDoc.exists) {
+      progress = { userId: req.user._id, questId: quest.id, answers: [], percentage: 0 };
+    } else {
+      progress = progressDoc.data();
     }
 
-    // INITIALIZE SHUFFLE if not already present (OR if level was completed and they are replaying)
+    // INITIALIZE SHUFFLE
     if (!progress.shuffledQuestions || progress.shuffledQuestions.length === 0) {
-      const allPool = quest.questions;
+      const allPool = quest.questions || [];
       
-      // 1. Pick a subset (e.g. 10 questions) OR just use all but shuffled
       const poolSize = quest.isBoss ? allPool.length : Math.min(allPool.length, 10);
       const randomSelection = shuffleArray(allPool).slice(0, poolSize);
 
-      // 2. Shuffle Options for each question
       const finalSequence = randomSelection.map((q, idx) => {
         const originalOptions = q.options;
         const originalAnswerText = originalOptions[q.correctAnswer];
@@ -76,7 +86,7 @@ const getQuest = async (req, res) => {
         const newAnswerIndex = shuffledOpts.indexOf(originalAnswerText);
 
         return {
-          originalIndex: idx, // Not strictly used but good for audit
+          originalIndex: idx,
           question: q.question,
           options: shuffledOpts,
           correctAnswerIndex: newAnswerIndex
@@ -84,24 +94,23 @@ const getQuest = async (req, res) => {
       });
 
       progress.shuffledQuestions = finalSequence;
-      progress.answers = []; // Reset answers for the new shuffle
+      progress.answers = []; 
       progress.currentQuestionIndex = 0;
       progress.percentage = 0;
-      await progress.save();
+      await db.collection('progress').doc(progressId).set(progress, { merge: true });
     }
 
-    // Strip answers for the frontend
-    const safeQuestions = progress.shuffledQuestions.map((q, idx) => ({
+    const safeQuestions = (progress.shuffledQuestions || []).map((q, idx) => ({
       question: q.question,
       options: q.options,
       isCompleted: idx < progress.currentQuestionIndex
     }));
 
     res.json({
-      ...quest.toObject(),
+      ...quest,
       questions: safeQuestions,
       progress: {
-        completedCount: progress.answers.length,
+        completedCount: progress.answers ? progress.answers.length : 0,
         percentage: progress.percentage,
         isCompleted: progress.isCompleted,
         currentQuestionIndex: progress.currentQuestionIndex
@@ -118,21 +127,28 @@ const submitAnswer = async (req, res) => {
   try {
     const { questionIndex, selectedOption } = req.body;
     
-    const user = await User.findById(req.user._id);
+    // Auth middleware already fetched user, but we need fresh to be safe
+    let userDoc = await db.collection('users').doc(req.user._id).get();
+    let user = { _id: userDoc.id, ...userDoc.data() };
+    
     if (user.energy <= 0) return res.status(403).json({ error: 'No energy left! Rest at the inn. 🏮' });
 
-    let progress = await Progress.findOne({ userId: user._id, questId: req.params.id });
-    if (!progress || !progress.shuffledQuestions[questionIndex]) {
+    const progressId = `${user._id}_${req.params.id}`;
+    let progressDoc = await db.collection('progress').doc(progressId).get();
+    
+    if (!progressDoc.exists) return res.status(400).json({ error: 'Invalid question state.' });
+    let progress = progressDoc.data();
+
+    if (!progress.shuffledQuestions || !progress.shuffledQuestions[questionIndex]) {
       return res.status(400).json({ error: 'Invalid question state.' });
     }
 
     const question = progress.shuffledQuestions[questionIndex];
-
     const isCorrect = selectedOption === question.correctAnswerIndex;
     
     if (!isCorrect) {
       user.energy = Math.max(0, user.energy - 1);
-      await user.save();
+      await db.collection('users').doc(user._id).update({ energy: user.energy });
       return res.json({ 
         correct: false, 
         energy: user.energy,
@@ -142,15 +158,16 @@ const submitAnswer = async (req, res) => {
 
     // Award XP & Coins
     const xpReward = 20;
-    const coinReward = 15;          // per correct answer
-    const completionBonus = 150;    // on quest completion
-    user.xp += xpReward;
-    user.coins += coinReward;
+    const coinReward = 15;        
+    const completionBonus = 150;    
+    user.xp = (user.xp || 0) + xpReward;
+    user.coins = (user.coins || 0) + coinReward;
 
     // Update Progress
+    if (!progress.answers) progress.answers = [];
     if (!progress.answers.some(a => a.questionIndex === questionIndex)) {
         progress.answers.push({ questionIndex, selectedOption });
-        progress.currentQuestionIndex = Math.max(progress.currentQuestionIndex, questionIndex + 1);
+        progress.currentQuestionIndex = Math.max((progress.currentQuestionIndex || 0), questionIndex + 1);
         progress.percentage = Math.round((progress.answers.length / progress.shuffledQuestions.length) * 100);
     }
 
@@ -160,9 +177,12 @@ const submitAnswer = async (req, res) => {
       user.coins += completionBonus;
     }
 
-    await Promise.all([user.save(), progress.save()]);
-    const newBadges = checkNewBadges(user);
-    if (newBadges.length > 0) await user.save(); 
+    const newBadges = checkNewBadges(user); // Might modify user.earnedBadges
+
+    await Promise.all([
+      db.collection('users').doc(user._id).update(user),
+      db.collection('progress').doc(progressId).set(progress, { merge: true })
+    ]);
 
     res.json({
       correct: true,
@@ -184,7 +204,8 @@ const submitAnswer = async (req, res) => {
 // POST /api/quests/:id/restart
 const restartQuest = async (req, res) => {
     try {
-        await Progress.deleteOne({ userId: req.user._id, questId: req.params.id });
+        const progressId = `${req.user._id}_${req.params.id}`;
+        await db.collection('progress').doc(progressId).delete();
         res.json({ message: 'Trial reset. Shuffling new questions...' });
     } catch (err) {
         res.status(500).json({ error: 'Failed to restart quest.' });
