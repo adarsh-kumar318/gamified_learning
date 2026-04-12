@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Swords, Shield, Search } from 'lucide-react';
 
 const SEARCH_STEPS = [
   "Scanning the Realm...",
@@ -47,9 +48,9 @@ export default function MatchmakingView({ onCancel, opponentFound }) {
                 <motion.div 
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="w-20 h-20 rounded-full bg-gradient-to-br from-accent via-accent2 to-accent shadow-[0_0_50px_rgba(124,58,237,0.4)] flex items-center justify-center text-4xl"
+                    className="w-20 h-20 rounded-full bg-gradient-to-br from-accent via-accent2 to-accent shadow-[0_0_50px_rgba(124,58,237,0.4)] flex items-center justify-center text-white"
                 >
-                    ⚔️
+                    <Swords size={40} />
                 </motion.div>
             </motion.div>
             
@@ -106,3 +107,4 @@ export default function MatchmakingView({ onCancel, opponentFound }) {
     </div>
   );
 }
+

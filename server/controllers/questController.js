@@ -8,7 +8,12 @@ const { checkNewBadges } = require('../utils/badgeEngine');
 // Lists all quests with their current progress for the user
 const listQuests = async (req, res) => {
   try {
-    const quests = await Quest.find({}).sort({ level: 1 });
+    const quests = await Quest.find({
+      $or: [
+        { isAI: { $ne: true } }, 
+        { createdBy: req.user._id }
+      ]
+    }).sort({ level: 1 });
     const progress = await Progress.find({ userId: req.user._id });
 
     // Merge progress into quest metadata

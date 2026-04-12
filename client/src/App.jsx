@@ -2,6 +2,17 @@ import { useState, useRef, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
+import { 
+  Swords, 
+  RefreshCw, 
+  Zap, 
+  AlertTriangle, 
+  X, 
+  Star, 
+  Map as MapIcon, 
+  LogOut, 
+  CircleX 
+} from "lucide-react";
 
 import ProtectedRoute   from "./components/ProtectedRoute";
 import Layout           from "./components/Layout";
@@ -73,8 +84,8 @@ export default function App() {
   };
 
   /* ── Helpers ──────────────────────────────────────────────────────────────── */
-  const showXpPopup = (text) => {
-    setXpPopup(text);
+  const showXpPopup = (text, icon = null) => {
+    setXpPopup({ text, icon });
     setTimeout(() => setXpPopup(null), 2100);
   };
 
@@ -179,7 +190,7 @@ export default function App() {
   const handleStartMatchmaking = () => {
     if (!battleSocket) return;
     if (userData.xp < 50) {
-      showXpPopup("⚠️ MINIMUM 50 XP REQUIRED FOR BATTLE");
+      showXpPopup("MINIMUM 50 XP REQUIRED FOR BATTLE", <AlertTriangle className="w-4 h-4" />);
       return;
     }
     setShowSubjectPicker(true);
@@ -225,7 +236,7 @@ export default function App() {
           earnedBadges: result.user.earnedBadges,
         }));
         if (result.isCompleted) {
-          showXpPopup("⚔️ TRIAL MASTERED! +100 XP");
+          showXpPopup("TRIAL MASTERED! +100 XP", <Swords className="w-4 h-4" />);
           syncApp();
         }
       } else {
@@ -241,7 +252,7 @@ export default function App() {
   const handleQuestRestart = async () => {
     try {
       await restartQuest(activeQuest.id);
-      showXpPopup("🔄 RESETTING TRIAL...");
+      showXpPopup("RESETTING TRIAL...", <RefreshCw className="w-4 h-4" />);
       await syncApp();
       await openQuest(activeQuest);
     } catch (err) {
@@ -253,9 +264,9 @@ export default function App() {
     try {
       const { user, message } = await refillUserEnergy();
       setUD((prev) => ({ ...prev, coins: user.coins, energy: user.energy }));
-      showXpPopup(`🏮 ${message}`);
+      showXpPopup(message, <Zap className="w-4 h-4" />);
     } catch (err) {
-      showXpPopup(`❌ ${err.message}`);
+      showXpPopup(err.message, <CircleX className="w-4 h-4" />);
     }
   };
 
@@ -319,7 +330,9 @@ export default function App() {
             <button
               onClick={() => setShowProfile(false)}
               className="absolute top-4 right-4 text-text3 hover:text-text1 transition-colors text-xl"
-            >✕</button>
+            >
+              <X size={20} />
+            </button>
             <div className="text-center mb-6">
               <span className="text-7xl block mb-3 drop-shadow-[0_0_20px_rgba(124,58,237,0.5)]">
                 {selectedAvatar?.emoji}
@@ -331,19 +344,23 @@ export default function App() {
             </div>
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="bg-bg2/50 border border-white/5 rounded-2xl p-4 text-center">
-                <div className="text-2xl mb-1 text-gold">⭐</div>
+                <div className="flex justify-center text-2xl mb-1 text-gold">
+                  <span className="icon"><Star size={24} /></span>
+                </div>
                 <div className="font-title text-2xl font-bold text-white">LVL {level}</div>
               </div>
               <div className="bg-bg2/50 border border-white/5 rounded-2xl p-4 text-center">
-                <div className="text-2xl mb-1 text-accent2">⚡</div>
+                <div className="flex justify-center text-2xl mb-1 text-accent2">
+                  <span className="icon"><Zap size={24} /></span>
+                </div>
                 <div className="font-title text-2xl font-bold text-white">{userData.energy}</div>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="w-full py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 font-black uppercase tracking-widest text-xs hover:bg-red-500 hover:text-white transition-all"
+              className="w-full py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 font-black uppercase tracking-widest text-xs hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2"
             >
-              Retire from Kingdom
+              <LogOut size={14} /> Retire from Kingdom
             </button>
           </div>
         </div>
@@ -351,8 +368,9 @@ export default function App() {
 
       {/* ─── XP Toast ───────────────────────────────────────────────────── */}
       {xpPopup && (
-        <div className="fixed top-24 right-4 sm:right-8 bg-gradient-to-r from-accent to-accent2 text-white px-6 py-3 rounded-2xl font-black text-xs z-[300] animate-pop-in pointer-events-none shadow-[0_10px_30px_rgba(124,58,237,0.4)] uppercase tracking-widest">
-          {xpPopup}
+        <div className="fixed top-24 right-4 sm:right-8 bg-gradient-to-r from-accent to-accent2 text-white px-6 py-3 rounded-2xl font-black text-xs z-[300] animate-pop-in pointer-events-none shadow-[0_10px_30px_rgba(124,58,237,0.4)] uppercase tracking-widest flex items-center gap-3">
+          {xpPopup.icon && <span className="icon">{xpPopup.icon}</span>}
+          {xpPopup.text}
         </div>
       )}
 
@@ -467,7 +485,9 @@ export default function App() {
           <div className="min-h-screen flex items-center justify-center bg-[#050510] text-[#f8fafc]">
             <BackgroundLayer />
             <div className="text-center z-10 p-8 border border-white/10 bg-white/5 rounded-3xl">
-              <div className="text-6xl mb-4">🗺️</div>
+              <div className="text-6xl mb-4 flex justify-center text-accent/50">
+                <MapIcon size={64} />
+              </div>
               <h2 className="font-title text-2xl mb-2">Lost in the Realm</h2>
               <p className="text-text2 mb-6">This route does not exist on your map.</p>
               <button
@@ -493,3 +513,4 @@ export default function App() {
     </>
   );
 }
+

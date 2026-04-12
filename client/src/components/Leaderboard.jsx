@@ -3,10 +3,19 @@ import { useState, useEffect } from 'react';
 import { AVATARS } from '../constants/data';
 import { fetchLeaderboard } from '../api';
 import { motion } from 'framer-motion';
+import { 
+  Trophy, 
+  Medal, 
+  Flame, 
+  Crown, 
+  Swords, 
+  Search,
+  Zap
+} from 'lucide-react';
 
 const avatarEmoji = (avatarId) => {
   const a = AVATARS.find(av => av.id === avatarId);
-  return a ? a.emoji : '⚔️';
+  return a ? a.emoji : <Swords size={20} />;
 };
 
 export default function Leaderboard({ currentUser, selectedAvatar, userData, level }) {
@@ -29,7 +38,7 @@ export default function Leaderboard({ currentUser, selectedAvatar, userData, lev
     _id: userData._id,
     name: currentUser || 'You',
     uid: userData.uid || '#---',
-    avatar: selectedAvatar?.emoji || '⚔️',
+    avatar: selectedAvatar?.emoji || <Swords size={20} />,
     xp: userData.xp,
     level,
     streak: userData.streak,
@@ -58,9 +67,9 @@ export default function Leaderboard({ currentUser, selectedAvatar, userData, lev
   const allLB = buildList();
 
   const podiumConfig = [
-    { pos: 1, height: 160, color: '#94a3b8', label: '🥈 2nd', delay: 0.1 },
-    { pos: 0, height: 220, color: '#f59e0b', label: '🥇 1st', delay: 0 },
-    { pos: 2, height: 140, color: '#b45309', label: '🥉 3rd', delay: 0.2 },
+    { pos: 1, height: 160, color: '#94a3b8', icon: <Medal size={28} />, label: '2nd Place', delay: 0.1 },
+    { pos: 0, height: 220, color: '#f59e0b', icon: <Trophy size={40} />, label: '1st Place', delay: 0 },
+    { pos: 2, height: 140, color: '#b45309', icon: <Medal size={24} />, label: '3rd Place', delay: 0.2 },
   ];
 
   return (
@@ -82,7 +91,7 @@ export default function Leaderboard({ currentUser, selectedAvatar, userData, lev
 
       {/* Podium */}
       <div className="podium-wrap flex justify-center items-end gap-2 md:gap-8 min-h-[280px] sm:min-h-[350px]">
-        {podiumConfig.map(({ pos, height, color, label, delay }) => {
+        {podiumConfig.map(({ pos, height, color, icon, label, delay }) => {
           const p = allLB[pos];
           if (!p) return null;
           return (
@@ -102,6 +111,9 @@ export default function Leaderboard({ currentUser, selectedAvatar, userData, lev
                   {p.avatar}
                 </div>
                 {p.isMe && <div className="absolute inset-0 rounded-full animate-ping bg-accent/20" />}
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 filter drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ color }}>
+                  {icon}
+                </div>
               </div>
               <div className={`text-[10px] sm:text-sm font-black uppercase tracking-widest text-center ${p.isMe ? 'text-accent2' : 'text-white'}`}>
                 {p.name}{p.isMe ? ' (You)' : ''}
@@ -119,7 +131,7 @@ export default function Leaderboard({ currentUser, selectedAvatar, userData, lev
               >
                 <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <span className="hidden sm:inline">{label}</span>
-                <span className="sm:hidden">{pos === 0 ? '🥇' : pos === 1 ? '🥈' : '🥉'}</span>
+                <span className="sm:hidden">{pos + 1}</span>
               </div>
             </motion.div>
           );
@@ -147,8 +159,8 @@ export default function Leaderboard({ currentUser, selectedAvatar, userData, lev
               </div>
 
               <div className="flex-1 flex flex-col min-w-0">
-                <span className="font-black text-lg text-white uppercase tracking-tighter truncate leading-none mb-1">
-                  {p.name}{p.isMe ? ' 👑' : ''}
+                <span className="font-black text-lg text-white uppercase tracking-tighter truncate leading-none mb-1 flex items-center gap-2">
+                  {p.name}{p.isMe && <Crown className="text-accent2" size={14} fill="currentColor" />}
                 </span>
                 <span className="text-[10px] font-black text-text3 uppercase tracking-[0.2em] opacity-40 truncate">
                   {p.uid}
@@ -166,9 +178,9 @@ export default function Leaderboard({ currentUser, selectedAvatar, userData, lev
                 </div>
                 {/* Always show XP on mobile */}
                 <div className="sm:hidden text-xs font-black text-accent2 font-mono">{p.xp.toLocaleString()} XP</div>
-                <div className="bg-orange-500/10 border border-orange-500/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl">
-                  <span className="text-sm">🔥</span>
-                  <span className="ml-1 sm:ml-2 font-black text-orange-400 font-mono text-xs sm:text-sm">{p.streak}</span>
+                <div className="bg-orange-500/10 border border-orange-500/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl flex items-center gap-1.5">
+                  <Flame size={14} className="text-orange-500" fill="currentColor" />
+                  <span className="font-black text-orange-400 font-mono text-xs sm:text-sm">{p.streak}</span>
                 </div>
               </div>
             </motion.div>
@@ -178,3 +190,4 @@ export default function Leaderboard({ currentUser, selectedAvatar, userData, lev
     </motion.div>
   );
 }
+

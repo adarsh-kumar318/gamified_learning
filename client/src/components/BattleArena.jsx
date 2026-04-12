@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Trophy, 
+  Skull, 
+  Timer, 
+  Swords, 
+  Target, 
+  Zap, 
+  Flame 
+} from 'lucide-react';
 
 export default function BattleArena({ 
   battleId, 
@@ -84,7 +93,9 @@ export default function BattleArena({
         >
             <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${isWinner ? 'from-gold via-yellow-400 to-gold' : 'from-red-500 via-red-600 to-red-500'}`} />
             
-            <div className="text-8xl mb-6">{isWinner ? '🏆' : '💀'}</div>
+            <div className={`text-8xl mb-6 flex justify-center ${isWinner ? 'text-gold' : 'text-red-500'}`}>
+              {isWinner ? <Trophy size={120} fill="currentColor" /> : <Skull size={120} />}
+            </div>
             <h2 className={`font-title text-5xl font-black mb-2 uppercase tracking-tighter ${isWinner ? 'text-gold' : 'text-red-500'}`}>
                 {isWinner ? 'Victory Path' : 'Defeat'}
             </h2>
@@ -94,11 +105,15 @@ export default function BattleArena({
 
             <div className="grid grid-cols-2 gap-4 mb-12">
                 <div className="bg-bg2/40 rounded-3xl p-6 border border-white/5">
-                    <div className="text-xs text-text3 uppercase mb-1 font-black">You</div>
+                    <div className="text-xs text-text3 uppercase mb-1 font-black flex items-center justify-center gap-2">
+                      <Swords size={12} /> You
+                    </div>
                     <div className="font-title text-3xl font-bold text-white">{score} / 5</div>
                 </div>
                 <div className="bg-bg2/40 rounded-3xl p-6 border border-white/5">
-                    <div className="text-xs text-text3 uppercase mb-1 font-black">{opponentName}</div>
+                    <div className="text-xs text-text3 uppercase mb-1 font-black flex items-center justify-center gap-2">
+                       <Target size={12} /> {opponentName}
+                    </div>
                     <div className="font-title text-3xl font-bold text-white">{oppProgress.score} / 5</div>
                 </div>
             </div>
@@ -132,7 +147,9 @@ export default function BattleArena({
               {/* Timer */}
               <div className="bg-surface/40 backdrop-blur-md border border-white/10 p-4 sm:p-8 rounded-2xl sm:rounded-[2rem]">
                 <div className="flex items-center justify-between mb-3 sm:mb-6">
-                  <span className="font-title font-black text-[10px] sm:text-sm uppercase tracking-widest opacity-60">Timer</span>
+                  <span className="font-title font-black text-[10px] sm:text-sm uppercase tracking-widest opacity-60 flex items-center gap-2">
+                    <Timer size={16} /> Timer
+                  </span>
                   <span className={`font-mono font-bold text-xl sm:text-2xl ${timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-accent2'}`}>
                     00:{timeLeft.toString().padStart(2, '0')}
                   </span>
@@ -152,7 +169,9 @@ export default function BattleArena({
                   <div className="absolute top-0 left-0 w-1 h-full bg-accent" />
                   <div className="flex justify-between items-end">
                     <div>
-                      <div className="text-[8px] sm:text-[10px] font-black uppercase text-accent tracking-[0.2em] mb-0.5">You</div>
+                      <div className="text-[8px] sm:text-[10px] font-black uppercase text-accent tracking-[0.2em] mb-0.5 flex items-center gap-1.5">
+                        <Swords size={10} /> You
+                      </div>
                       <div className="font-title text-sm sm:text-xl font-bold">{currentIdx + 1}/5</div>
                     </div>
                     <div className="text-base sm:text-2xl font-black text-white">{score}</div>
@@ -162,7 +181,9 @@ export default function BattleArena({
                   <div className="absolute top-0 left-0 w-1 h-full bg-text3/20" />
                   <div className="flex justify-between items-end">
                     <div>
-                      <div className="text-[8px] sm:text-[10px] font-black uppercase text-text3/40 tracking-[0.2em] mb-0.5">Rival</div>
+                      <div className="text-[8px] sm:text-[10px] font-black uppercase text-text3/40 tracking-[0.2em] mb-0.5 flex items-center gap-1.5">
+                        <Target size={10} /> Rival
+                      </div>
                       <div className="font-title text-sm sm:text-xl font-bold text-text2 opacity-60 truncate max-w-[80px]">{opponentName}</div>
                     </div>
                     <div className="text-base sm:text-2xl font-black text-white/40">{oppProgress.index + 1}/5</div>
@@ -211,3 +232,4 @@ export default function BattleArena({
     </div>
   );
 }
+

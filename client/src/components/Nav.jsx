@@ -1,13 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { calcLevelProgress } from '../constants/data';
+import { 
+  Home, 
+  Swords, 
+  Users, 
+  Trophy, 
+  Brain, 
+  Zap, 
+  Coins, 
+  LogOut, 
+  Menu, 
+  X
+} from 'lucide-react';
 
 const NAV_ITEMS = [
-  { id: "dashboard", icon: "🏠", label: "Home" },
-  { id: "quests",    icon: "⚔️", label: "Quests" },
-  { id: "social",   icon: "🤝", label: "Social" },
-  { id: "leaderboard", icon: "🏆", label: "Ranks" },
-  { id: "tutor",    icon: "🧠", label: "AI Tutor" },
+  { id: "dashboard", icon: <Home className="w-4 h-4" />, label: "Home" },
+  { id: "quests",    icon: <Swords className="w-4 h-4" />, label: "Quests" },
+  { id: "social",   icon: <Users className="w-4 h-4" />, label: "Social" },
+  { id: "leaderboard", icon: <Trophy className="w-4 h-4" />, label: "Ranks" },
+  { id: "tutor",    icon: <Brain className="w-4 h-4" />, label: "AI Tutor" },
 ];
 
 export default function Nav({ 
@@ -69,7 +81,10 @@ export default function Nav({
 
           {/* Brand */}
           <div className="flex flex-col shrink-0">
-            <span className="nav-brand text-gradient-purple">⚔️ LevelUp</span>
+            <div className="flex items-center gap-2">
+              <span className="icon text-accent"><Swords size={20} /></span>
+              <span className="nav-brand text-gradient-purple">LevelUp</span>
+            </div>
             <span className="text-[8px] text-text3 font-bold uppercase tracking-[0.2em] -mt-0.5 opacity-60 hidden sm:block">
               Warrior's Journey
             </span>
@@ -86,7 +101,7 @@ export default function Nav({
                     ? 'bg-accent text-white shadow-[0_0_15px_rgba(124,58,237,0.4)]'
                     : 'text-text2 hover:text-text1 hover:bg-white/5'}`}
               >
-                <span className="text-sm">{icon}</span>
+                <span className="icon">{icon}</span>
                 <span className="hidden xl:inline">{label}</span>
                 {id === 'social' && socialNotification && (
                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#050510] animate-pulse" />
@@ -106,8 +121,8 @@ export default function Nav({
               </div>
               <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                 <div
-                  className="h-full bg-gradient-to-r from-accent to-accent2 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(124,58,237,0.5)]"
-                  style={{ width: `${progress}%` }}
+                   className="h-full bg-gradient-to-r from-accent to-accent2 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(124,58,237,0.5)]"
+                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
@@ -117,7 +132,7 @@ export default function Nav({
               onClick={onStartBattle}
               className="desktop-battle-btn hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 rounded-xl font-title font-black text-[10px] uppercase tracking-[0.1em] text-white shadow-[0_5px_15px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 transition-all border border-red-400/30 btn-touch"
             >
-              <span>⚔️</span> Battle
+              <span className="icon"><Swords size={12} /></span> Battle
             </button>
 
             {/* Energy — desktop only */}
@@ -140,14 +155,15 @@ export default function Nav({
                     ? 'bg-accent/10 border-accent/30 text-accent hover:bg-accent hover:text-white'
                     : 'opacity-40 cursor-not-allowed border-white/10 text-text3'
                 }`}
+                title="Refill Energy"
               >
-                🏮
+                <span className="icon"><Zap size={10} /></span>
               </button>
             </div>
 
             {/* Coins — desktop only */}
             <div className="desktop-coin-display hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 border border-gold/30 rounded-xl text-sm font-black text-gold">
-              🪙 <span className="font-mono">{userData?.coins || 0}</span>
+              <span className="icon"><Coins size={14} /></span> <span className="font-mono">{userData?.coins || 0}</span>
             </div>
 
             {/* Avatar / Profile — always visible */}
@@ -156,7 +172,7 @@ export default function Nav({
               className="flex items-center gap-2 px-2.5 py-1.5 bg-surface2/80 border border-white/10 rounded-xl cursor-pointer hover:border-accent2 transition-all group relative overflow-hidden btn-touch"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <span className="text-xl group-hover:scale-110 transition-transform z-10">{selectedAvatar?.emoji || '⚔️'}</span>
+              <span className="text-xl group-hover:scale-110 transition-transform z-10">{selectedAvatar?.emoji || <Swords size={18} />}</span>
               <div className="flex-col z-10 hidden sm:flex">
                 <span className="text-[11px] font-black text-text1 leading-tight group-hover:text-accent2 transition-colors uppercase tracking-tight truncate max-w-[80px]">{currentUser}</span>
                 <span className="text-[8px] text-text3 font-mono opacity-60">RANK: MASTER</span>
@@ -168,8 +184,9 @@ export default function Nav({
               <button
                 onClick={onLogout}
                 className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-500/5 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all btn-touch"
+                title="Logout"
               >
-                <span className="text-lg">🚪</span>
+                <span className="icon"><LogOut size={16} /></span>
               </button>
             )}
 
@@ -204,7 +221,7 @@ export default function Nav({
       >
         {/* Drawer Header */}
         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
-          <span className="text-3xl">{selectedAvatar?.emoji || '⚔️'}</span>
+          <span className="text-3xl">{selectedAvatar?.emoji || <Swords size={24} />}</span>
           <div>
             <div className="font-black text-sm text-text1 uppercase tracking-tight truncate">{currentUser}</div>
             <div className="text-[10px] text-text3 font-bold uppercase tracking-widest">Level {level} Warrior</div>
@@ -227,7 +244,7 @@ export default function Nav({
         {/* Coin + Energy row */}
         <div className="flex items-center gap-2 mb-6">
           <div className="flex-1 flex items-center gap-1.5 px-3 py-2 bg-gold/10 border border-gold/30 rounded-xl text-xs font-black text-gold">
-            🪙 <span className="font-mono">{userData?.coins || 0}</span>
+            <span className="icon"><Coins size={12} /></span> <span className="font-mono">{userData?.coins || 0}</span>
           </div>
           <button
             onClick={() => { onRefill(); setMenuOpen(false); }}
@@ -238,7 +255,7 @@ export default function Nav({
                 : 'opacity-40 cursor-not-allowed border-white/10 text-text3'
             }`}
           >
-            🏮 Refill
+            <span className="icon-inline"><Zap size={10} /></span> Refill
           </button>
         </div>
 
@@ -252,7 +269,7 @@ export default function Nav({
                 ? 'bg-accent/20 text-accent border border-accent/30 shadow-[0_0_15px_rgba(124,58,237,0.15)]'
                 : 'text-text2 hover:bg-white/5 hover:text-text1 border border-transparent'}`}
           >
-            <span className="text-xl">{icon}</span>
+            <span className="icon text-xl">{icon}</span>
             {label}
             {id === 'social' && socialNotification && (
               <span className="ml-auto w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
@@ -267,7 +284,7 @@ export default function Nav({
           onClick={() => { onStartBattle(); setMenuOpen(false); }}
           className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-gradient-to-r from-red-600 to-red-500 rounded-2xl font-title font-black text-xs uppercase tracking-[0.1em] text-white shadow-[0_5px_15px_rgba(220,38,38,0.3)] btn-touch border border-red-400/30"
         >
-          ⚔️ Enter Battle Arena
+          <span className="icon"><Swords size={16} /></span> Enter Battle Arena
         </button>
 
         {/* Logout */}
@@ -275,9 +292,10 @@ export default function Nav({
           onClick={() => { onLogout(); setMenuOpen(false); }}
           className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-3.5 bg-red-500/5 border border-red-500/20 rounded-2xl text-red-400 font-black text-xs uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all btn-touch"
         >
-          🚪 Logout
+          <span className="icon"><LogOut size={14} /></span> Logout
         </button>
       </aside>
     </>
   );
 }
+

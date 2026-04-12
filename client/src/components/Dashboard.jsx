@@ -2,6 +2,22 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { SKILL_PATHS, BADGES } from '../constants/data';
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';
+import * as Icons from 'lucide-react';
+import { 
+  Swords, 
+  Zap, 
+  Coins, 
+  Flame, 
+  Trophy, 
+  Star 
+} from 'lucide-react';
+
+/* Helper to render Lucide icons by name from our data.js */
+const LucideIcon = ({ name, size = 24, className = "" }) => {
+  const IconComponent = Icons[name];
+  if (!IconComponent) return <Icons.HelpCircle size={size} className={className} />;
+  return <IconComponent size={size} className={className} />;
+};
 
 export default function Dashboard({ userData, currentUser, selectedAvatar, level, levelProgress, xpToNext, completedCount, setActiveNav, setActiveQuestPath, questsList }) {
   const { username } = useParams();
@@ -26,7 +42,6 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
       <div className="relative group overflow-hidden rounded-[2rem] sm:rounded-[3rem] border border-white/5 bg-[#0a0a20]/40 backdrop-blur-2xl p-6 sm:p-10 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-accent2/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-        {/* hero-inner uses our responsive CSS class for stacking */}
         <div className="hero-inner relative z-10 flex flex-col md:flex-row items-center gap-6 sm:gap-10">
 
           {/* Avatar */}
@@ -34,8 +49,8 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
             <div className="hero-avatar w-28 h-28 sm:w-40 sm:h-40 rounded-full border-4 border-accent/30 flex items-center justify-center text-5xl sm:text-7xl bg-surface/50 shadow-[0_0_50px_rgba(124,58,237,0.3)] relative z-10">
               {selectedAvatar?.emoji}
             </div>
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gold px-3 py-1 rounded-full text-black font-black text-[10px] uppercase tracking-widest shadow-xl border-2 border-white/20 whitespace-nowrap">
-              Level {level}
+            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gold px-3 py-1 rounded-full text-black font-black text-[10px] uppercase tracking-widest shadow-xl border-2 border-white/20 whitespace-nowrap flex items-center gap-1.5">
+              <Star size={10} fill="currentColor" /> Level {level}
             </div>
           </div>
 
@@ -55,12 +70,12 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
             <div className="hero-btns mt-6 flex flex-wrap justify-center md:justify-start gap-3">
               <button
                 onClick={() => setActiveNav("quests")}
-                className="px-6 sm:px-8 py-3 sm:py-4 bg-accent text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-[0_10px_30px_rgba(124,58,237,0.4)] hover:scale-105 active:scale-95 transition-all btn-touch"
+                className="px-6 sm:px-8 py-3 sm:py-4 bg-accent text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-[0_10px_30px_rgba(124,58,237,0.4)] hover:scale-105 active:scale-95 transition-all btn-touch flex items-center gap-2"
               >
-                Enter the Map ⚔️
+                Enter the Map <Swords size={14} />
               </button>
               <div className="flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-2xl">
-                <span className="text-xl">⚡</span>
+                <span className="icon text-accent2"><Zap size={20} /></span>
                 <div>
                   <div className="text-[9px] font-black text-text3 uppercase leading-none">Stamina</div>
                   <div className="text-lg sm:text-xl font-black text-white font-mono">{userData.energy} / 5</div>
@@ -75,7 +90,9 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
       <div className="stats-grid grid gap-4">
         {/* XP Card */}
         <div className="bg-[#101025]/60 border border-white/5 rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-8 hover:border-accent/30 transition-all group overflow-hidden relative">
-          <div className="absolute -right-6 -bottom-6 text-7xl sm:text-8xl opacity-5 group-hover:opacity-10 transition-opacity">⚡</div>
+          <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Zap size={100} />
+          </div>
           <div className="text-[9px] sm:text-[10px] font-black text-accent2 uppercase tracking-[0.3em] mb-3">Battle Experience</div>
           <div className="text-3xl sm:text-4xl font-black text-white mb-2 font-mono tracking-tighter">{userData.xp.toLocaleString()}</div>
           <div className="flex justify-between items-end mb-2">
@@ -89,7 +106,9 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
 
         {/* Gold Card */}
         <div className="bg-[#101025]/60 border border-white/5 rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-8 hover:border-gold/30 transition-all group overflow-hidden relative">
-          <div className="absolute -right-6 -bottom-6 text-7xl sm:text-8xl opacity-5 group-hover:opacity-10 transition-opacity">🪙</div>
+          <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Coins size={100} />
+          </div>
           <div className="text-[9px] sm:text-[10px] font-black text-gold uppercase tracking-[0.3em] mb-3">Gold Vault</div>
           <div className="text-3xl sm:text-4xl font-black text-white mb-1 font-mono tracking-tighter">{userData.coins.toLocaleString()}</div>
           <div className="text-[9px] text-text3 uppercase font-bold tracking-widest opacity-60">Wealth from trials</div>
@@ -97,7 +116,9 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
 
         {/* Streak Card */}
         <div className="bg-[#101025]/60 border border-white/5 rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-8 hover:border-orange-500/30 transition-all group overflow-hidden relative">
-          <div className="absolute -right-6 -bottom-6 text-7xl sm:text-8xl opacity-5 group-hover:opacity-10 transition-opacity">🔥</div>
+          <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Flame size={100} />
+          </div>
           <div className="text-[9px] sm:text-[10px] font-black text-orange-400 uppercase tracking-[0.3em] mb-3">Training Streak</div>
           <div className="text-3xl sm:text-4xl font-black text-white mb-1 font-mono tracking-tighter">{userData.streak} Days</div>
           <div className="text-[9px] text-text3 uppercase font-bold tracking-widest opacity-60">Consistency is your blade</div>
@@ -122,8 +143,8 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
               >
                 <div className="flex justify-between items-center mb-4 sm:mb-6">
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl sm:text-3xl group-hover:scale-110 transition-transform">
-                      {path.icon}
+                    <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform text-accent">
+                      <LucideIcon name={path.icon} size={28} />
                     </div>
                     <div>
                       <div className="font-title text-sm sm:text-lg font-bold text-white group-hover:text-accent2 transition-colors uppercase tracking-tight">{path.name}</div>
@@ -157,20 +178,23 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
               <div
                 key={badge.id}
                 title={badge.desc}
-                className={`group relative bg-[#0a0a20]/40 border rounded-[1.25rem] sm:rounded-[2rem] p-4 sm:p-6 text-center transition-all duration-500 overflow-hidden
+                className={`group relative bg-[#0a0a20]/40 border rounded-[1.25rem] sm:rounded-[2rem] p-4 sm:p-6 text-center transition-all duration-500 overflow-hidden flex flex-col items-center justify-center
                   ${earned
                     ? 'border-gold/30 shadow-[0_0_40px_rgba(245,158,11,0.1)] hover:shadow-[0_0_60px_rgba(245,158,11,0.2)]'
                     : 'border-white/5 opacity-30 grayscale saturate-0'}`}
               >
                 {earned && <div className="absolute inset-0 bg-gradient-to-t from-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />}
-                <span className="text-3xl sm:text-5xl block mb-2 sm:mb-4 group-hover:scale-125 transition-transform duration-500">
-                  {badge.icon}
-                </span>
+                <div className="mb-2 sm:mb-4 group-hover:scale-125 transition-transform duration-500 text-gold">
+                  <LucideIcon name={badge.icon} size={40} className="sm:hidden" />
+                  <LucideIcon name={badge.icon} size={50} className="hidden sm:block" />
+                </div>
                 <div className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${earned ? 'text-gold' : 'text-text3'}`}>
                   {badge.name}
                 </div>
                 {earned && (
-                  <div className="absolute top-1.5 right-1.5 text-[7px] font-black text-gold/60">✓</div>
+                  <div className="absolute top-1.5 right-1.5 text-[7px] font-black text-gold/60">
+                    <Icons.CheckCircle2 size={10} />
+                  </div>
                 )}
               </div>
             );
@@ -180,3 +204,4 @@ export default function Dashboard({ userData, currentUser, selectedAvatar, level
     </motion.div>
   );
 }
+

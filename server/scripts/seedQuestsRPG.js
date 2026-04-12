@@ -37,7 +37,7 @@ const seedQuests = async () => {
 
     await Quest.deleteMany({});
 
-    const paths = ['webdev', 'aptitude', 'english', 'datascience'];
+    const paths = ['webdev', 'aptitude', 'english', 'datascience', 'agenticai', 'dsa', 'mathematics', 'chemistry', 'physics'];
     const totalLevelsPerPath = 50;
 
     const quests = [];
