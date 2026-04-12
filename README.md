@@ -35,62 +35,62 @@ LevelUp Learning is a high-fidelity MERN stack application that transforms educa
 - **Online Tracking**: See when your allies are "Ready for Battle" via real-time socket updates.
 - **Instant Notifications**: Toast notifications appear instantly when a scroll (friend request) is received.
 
-### **3. ⚔️ 1v1 Battle Arena (Real-Time)**
-- **Matchmaking Queue**: A server-side queue pairs online warriors based on availability.
-- **XP Investment**: Players bet 50 XP. The winner takes the pot (DOUBLE reward), while the loser forfeits their investment.
-- **Real-Time Synergy**: Battle progress, timer synchronization, and results are handled via a dedicated Socket.io namespace (`/battles`).
-- **Anticheat Engine**: Server-side validation of scores and timing to ensure every victory is earned fairly.
+### **3. 🪄 AI Summoner's Circle**
+- **Dynamic Quiz Generation**: Input any subject and difficulty level to instantly manifest custom MCQ trials.
+- **Provider Agnostic**: Integrated support for **Google Gemini**, **OpenAI**, and **NVIDIA NIM** models.
+- **Sage Insights**: Real-time AI explanations for every missed phase, turning failures into teaching moments.
 
-### **4. Dynamic Routing**
-- **Personalized URLs**: Every user has a unique, aesthetic profile link (e.g., `localhost:5173/dashboard/maq_`).
-- **Protected Gateways**: Advanced route guarding ensures only authenticated heroes can access the AI Tutor and private maps.
+### **4. ⚔️ Battle Arena & Subject Paths**
+- **Expanded Curriculum**: Specific mastery paths for **Agentic AI, DSA, Mathematics, Chemistry, and Physics**.
+- **Real-Time Matchmaking**: Queue-based 1v1 battles with XP wagers and real-time score syncing.
 
-### **4. AI Tutor & Quests**
-- **AI-Powered Learning**: An integrated tutor to assist with difficult aptitude questions.
-- **Mastery Paths**: Specific skill trees for WebDev, Aptitude, English, and Data Science.
+### **5. 🏰 Production Architecture**
+- **Monolithic Deployment**: Optimized to run on **Render.com** as a single service.
+- **Portable Networking**: Relative API paths ensure the app works on any production domain without reconfiguration.
 
 ---
 
-## 🛠️ Installation & Setup
+## 🛠️ Deployment & Production
 
-### **Backend Configuration**
-1. Navigate to the `server` directory.
-2. Create a `.env` file with the following:
+### **Backend Configuration & Setup**
+1. Run `npm install` in both `client` and `server` directories.
+2. Create a `.env` file in the `server` directory with the following:
    ```env
-   PORT=***
-   MONGODB_URI=mongodb:******
-   JWT_SECRET=***
+   PORT=5001
+   FIREBASE_PROJECT_ID=your_id
+   FIREBASE_CLIENT_EMAIL=your_email
+   FIREBASE_PRIVATE_KEY=your_key
+   JWT_SECRET=your_jwt_secret
    ```
-3. Run `npm install` and `npm start`.
-
-### **Frontend Configuration**
-1. Navigate to the `client` directory.
-2. Run `npm install`.
-3. Start the dev portal: `npm run dev`.
+3. Create a `.env` file in the `client` directory with the following:
+   ```env
+   VITE_FIREBASE_API_KEY=your_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_domain
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   ```
+4. Start dev portals: `npm run dev` in client, `npm start` in server.### **One-Click Production Build**
+Run the following from the root to verify the monolithic bundle:
+```bash
+npm run build
+```
 
 ---
 
 ## 🗺️ Project Structure
 
 ```text
-├── client/
-│   ├── src/
-│   │   ├── components/    # Reusable UI (Nav, Social, Dashboard)
-│   │   ├── constants/     # Data (Quests, Badges, Avatars)
-│   │   ├── api.js         # Centralized Network Layer
-│   │   └── App.jsx        # Root Routing & State Hub
-├── server/
-│   ├── models/            # Database Schemas (User, FriendRequest)
-│   ├── routes/            # API Entry Points
-│   ├── controllers/       # Business Logic
-│   └── server.js          # Main Entry & Socket Config
+├── client/                # React Frontend (Vite)
+├── server/                # Node.js Backend (Express)
+│   ├── controllers/       # AI Generation & Trial Logic
+│   ├── services/          # Real-time Sockets & Cron
+├── package.json           # Monolithic Build & Deployment Scripts
 ```
 
 ---
 
 ## 🏆 Development Principles
-- **Aesthetic Excellence**: Vibrant colors, dark modes, and interactive hover effects.
-- **State-of-the-Art UX**: Micro-animations and zero placeholders.
-- **Security First**: Custom JWT auth with strict route protection.
+- **Aesthetic Excellence**: Premium glassmorphism and micro-animations.
+- **Scalable Intelligence**: Modular LLM integration for quizzes and tutoring.
+- **Pedagogical Gamification**: Adaptive feedback via AI Sage.
 
 **Level up your quest for knowledge today!** ⚔️
