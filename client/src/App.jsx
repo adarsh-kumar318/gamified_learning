@@ -42,7 +42,7 @@ import { AVATARS, calcLevel, calcXpToNext, calcLevelProgress } from "./constants
 import "./styles/index.css";
 
 /* ─── Constants ────────────────────────────────────────────────────────────── */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 const INITIAL_USER = {
   xp: 0, coins: 0, totalCoins: 0, level: 1, streak: 1, energy: 5,
