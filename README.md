@@ -57,9 +57,9 @@ LevelUp Learning is a high-fidelity MERN stack application that transforms educa
 1. Navigate to the `server` directory.
 2. Create a `.env` file with the following:
    ```env
-   PORT=5001
-   MONGODB_URI=mongodb://127.0.0.1:27017/leveluplearning
-   JWT_SECRET=your_jwt_secret
+   PORT=***
+   MONGODB_URI=mongodb:******
+   JWT_SECRET=***
    ```
 3. Run `npm install` and `npm start`.
 
