@@ -10,10 +10,16 @@ export const AVATARS = [
 ];
 
 export const SKILL_PATHS = [
-  { id: "webdev", name: "Web Dev", icon: "💻", color: "#3b82f6", desc: "HTML, CSS, JavaScript & React" },
-  { id: "aptitude", name: "Aptitude", icon: "🧮", color: "#8b5cf6", desc: "Math, Logic & Reasoning" },
-  { id: "english", name: "English", icon: "📚", color: "#10b981", desc: "Grammar, Vocabulary & Writing" },
-  { id: "datascience", name: "Data Science", icon: "📊", color: "#f59e0b", desc: "Python, Stats & ML Basics" },
+  { id: "webdev", name: "Web Dev", icon: "Code", color: "#3b82f6", desc: "HTML, CSS, JavaScript & React" },
+  { id: "aptitude", name: "Aptitude", icon: "Brain", color: "#8b5cf6", desc: "Math, Logic & Reasoning" },
+  { id: "english", name: "English", icon: "Book", color: "#10b981", desc: "Grammar, Vocabulary & Writing" },
+  { id: "datascience", name: "Data Science", icon: "Database", color: "#f59e0b", desc: "Python, Stats & ML Basics" },
+  { id: "agenticai", name: "Agentic AI", icon: "Bot", color: "#ec4899", desc: "Autonomous Agents & LLM Frameworks" },
+  { id: "dsa", name: "DSA", icon: "Network", color: "#f43f5e", desc: "Data Structures & Algorithm Mastery" },
+  { id: "mathematics", name: "Mathematics", icon: "Calculator", color: "#fbbf24", desc: "Calculus, Linear Algebra & Theory" },
+  { id: "chemistry", name: "Chemistry", icon: "FlaskConical", color: "#06b6d4", desc: "Organic, Inorganic & Lab Science" },
+  { id: "physics", name: "Physics", icon: "Atom", color: "#8b5cf6", desc: "Mechanics, Quantum & Unified Laws" },
+  { id: "others", name: "Others", icon: "Sparkles", color: "#a855f7", desc: "Summon Custom AI Trials" },
 ];
 
 export const QUESTS = {
@@ -32,7 +38,7 @@ export const QUESTS = {
     { id: "a5", title: "Algebra Abyss", level: 5, xp: 300, coins: 150, desc: "Solve the ultimate algebraic riddles.", question: "If 2x + 3 = 11, what is x?", options: ["3","4","5","7"], answer: 1, explanation: "2x = 11-3 = 8, so x = 8/2 = 4.", topic: "Algebra" },
   ],
   english: [
-    { id: "e1", title: "Grammar Grotto", level: 1, xp: 100, coins: 50, desc: "Explore the foundations of language.", question: "Which sentence is grammatically correct?", options: ["Him and me went to the store","He and I went to the store","Him and I went to the store","He and me went to the store"], answer: 1, explanation: "Subject pronouns (He, I) are used for the subject of a sentence.", topic: "Grammar" },
+    { id: "e1", title: "Grammar Grotto", level: 1, xp: 100, coins: 50, desc: "Explore the foundations of language.", question: "Which sentence is grammatically correct?", options: ["Him and me went to the store","He and I went to the store","Him and i went to the store","He and me went to the store"], answer: 1, explanation: "Subject pronouns (He, I) are used for the subject of a sentence.", topic: "Grammar" },
     { id: "e2", title: "Vocabulary Vault", level: 2, xp: 150, coins: 75, desc: "Unlock the treasure trove of words.", question: "What is the meaning of 'ephemeral'?", options: ["Permanent","Lasting a very short time","Ancient","Beautiful"], answer: 1, explanation: "Ephemeral means lasting for a very short time (e.g., 'ephemeral trends').", topic: "Vocabulary" },
     { id: "e3", title: "Synonym Sanctum", level: 3, xp: 200, coins: 100, desc: "Master the art of word equivalence.", question: "Choose the best synonym for 'meticulous':", options: ["Careless","Extremely careful","Hasty","Indifferent"], answer: 1, explanation: "Meticulous means showing great attention to detail; careful and precise.", topic: "Synonyms" },
     { id: "e4", title: "Reading Realm", level: 4, xp: 250, coins: 125, desc: "Decode the secrets within text.", question: "What is the main purpose of a 'thesis statement'?", options: ["End a paragraph","Start a story","State the main argument","List examples"], answer: 2, explanation: "A thesis statement presents the central argument or main point of an essay.", topic: "Writing" },
@@ -45,21 +51,36 @@ export const QUESTS = {
     { id: "d4", title: "ML Mountain", level: 4, xp: 250, coins: 125, desc: "Ascend to the peak of machine learning.", question: "Which algorithm is used for classification with a straight-line boundary?", options: ["K-Means","Linear Regression","Logistic Regression","DBSCAN"], answer: 2, explanation: "Logistic Regression is a classification algorithm that uses a linear decision boundary.", topic: "ML Basics" },
     { id: "d5", title: "Neural Nexus", level: 5, xp: 300, coins: 150, desc: "Unlock the power of neural networks.", question: "What is the role of an 'activation function' in a neural network?", options: ["Store weights","Train the model","Introduce non-linearity","Normalize data"], answer: 2, explanation: "Activation functions introduce non-linearity, allowing networks to learn complex patterns.", topic: "Deep Learning" },
   ],
+  agenticai: [
+    { id: "ai1", title: "Agentic Awakening", level: 1, xp: 100, coins: 50, desc: "First steps into autonomous reasoning.", question: "What is the core property of an 'Agent'?", options: ["Static responses","Goal-directed sequential actions","Hardcoded rules only","No external tool access"], answer: 1, explanation: "Agents plan and take multiple actions autonomously to achieve a goal.", topic: "Introduction" },
+  ],
+  dsa: [
+    { id: "ds1", title: "Array Archipelago", level: 1, xp: 100, coins: 50, desc: "Navigate the basics of memory layout.", question: "What is the time complexity of array index access?", options: ["O(n)","O(1)","O(log n)","O(n²)"], answer: 1, explanation: "Arrays provide constant time access via offset calculation.", topic: "Arrays" },
+  ],
+  mathematics: [
+    { id: "m1", title: "Calculus Cathedral", level: 1, xp: 100, coins: 50, desc: "Study the language of change.", question: "What is the derivative of x²?", options: ["2x","x³/3","2","x"], answer: 0, explanation: "The power rule: d/dx(x^n) = n*x^(n-1).", topic: "Calculus" },
+  ],
+  chemistry: [
+    { id: "c1", title: "Atomic Alchemy", level: 1, xp: 100, coins: 50, desc: "Explore the building blocks of matter.", question: "What is the atomic number of Carbon?", options: ["4","6","8","10"], answer: 1, explanation: "Carbon has 6 protons in its nucleus.", topic: "Atomic Structure" },
+  ],
+  physics: [
+    { id: "p1", title: "Kinetic Kingdom", level: 1, xp: 100, coins: 50, desc: "Master the laws of motion.", question: "What is the SI unit of Force?", options: ["Watt","Joule","Newton","Pascal"], answer: 2, explanation: "Force is measured in Newtons (N), defined as 1 kg*m/s².", topic: "Mechanics" },
+  ],
 };
 
 export const BADGES = [
-  { id: "first_step", name: "Baby Steps", icon: "🌱", desc: "First masteries. Answer 1 question correctly.", condition: (u) => u.perfectAnswers >= 1 || u.totalQuestsCompleted >= 1 },
-  { id: "first_quest", name: "Quest Starter", icon: "🎯", desc: "Complete your first quest", condition: (u) => u.completedQuests.length >= 1 },
-  { id: "wealthy_start", name: "Pocket Change", icon: "🪙", desc: "Earn 50 coins", condition: (u) => u.totalCoins >= 50 },
-  { id: "xp100", name: "Century Club", icon: "💯", desc: "Earn 100 XP", condition: (u) => u.xp >= 100 },
-  { id: "xp500", name: "XP Hunter", icon: "⭐", desc: "Earn 500 XP", condition: (u) => u.xp >= 500 },
-  { id: "streak3", name: "On Fire", icon: "🔥", desc: "3-day streak", condition: (u) => u.streak >= 3 },
-  { id: "streak7", name: "Week Warrior", icon: "📅", desc: "7-day streak", condition: (u) => u.streak >= 7 },
-  { id: "level5", name: "Rising Star", icon: "🌟", desc: "Reach level 5", condition: (u) => u.level >= 5 },
-  { id: "level10", name: "Ascendant", icon: "🚀", desc: "Reach level 10", condition: (u) => u.level >= 10 },
-  { id: "all_paths", name: "Pathfinder", icon: "🗺️", desc: "Try all skill paths", condition: (u) => new Set(u.completedQuests.map(q => q.pathId)).size >= 4 },
-  { id: "perfect", name: "Perfectionist", icon: "💎", desc: "Answer correctly on first try 5 times", condition: (u) => u.perfectAnswers >= 5 },
-  { id: "coins100", name: "Gold Hoarder", icon: "💰", desc: "Earn 100 coins", condition: (u) => u.totalCoins >= 100 },
+  { id: "first_step", name: "Baby Steps", icon: "Sprout", desc: "First masteries. Answer 1 question correctly.", condition: (u) => u.perfectAnswers >= 1 || u.totalQuestsCompleted >= 1 },
+  { id: "first_quest", name: "Quest Starter", icon: "Target", desc: "Complete your first quest", condition: (u) => u.completedQuests.length >= 1 },
+  { id: "wealthy_start", name: "Pocket Change", icon: "Coins", desc: "Earn 50 coins", condition: (u) => u.totalCoins >= 50 },
+  { id: "xp100", name: "Century Club", icon: "Zap", desc: "Earn 100 XP", condition: (u) => u.xp >= 100 },
+  { id: "xp500", name: "XP Hunter", icon: "Star", desc: "Earn 500 XP", condition: (u) => u.xp >= 500 },
+  { id: "streak3", name: "On Fire", icon: "Flame", desc: "3-day streak", condition: (u) => u.streak >= 3 },
+  { id: "streak7", name: "Week Warrior", icon: "Calendar", desc: "7-day streak", condition: (u) => u.streak >= 7 },
+  { id: "level5", name: "Rising Star", icon: "Trophy", desc: "Reach level 5", condition: (u) => u.level >= 5 },
+  { id: "level10", name: "Ascendant", icon: "Rocket", desc: "Reach level 10", condition: (u) => u.level >= 10 },
+  { id: "all_paths", name: "Pathfinder", icon: "Map", desc: "Try all skill paths", condition: (u) => new Set(u.completedQuests.map(q => q.pathId)).size >= 4 },
+  { id: "perfect", name: "Perfectionist", icon: "Diamond", desc: "Answer correctly on first try 5 times", condition: (u) => u.perfectAnswers >= 5 },
+  { id: "coins100", name: "Gold Hoarder", icon: "Gem", desc: "Earn 100 coins", condition: (u) => u.totalCoins >= 100 },
 ];
 
 export const LEADERBOARD = [

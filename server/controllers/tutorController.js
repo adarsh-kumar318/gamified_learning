@@ -1,95 +1,145 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const OpenAI = require("openai");
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+/**
+ * 🛠️ Provider Factory
+ * Automatically selects the AI engine based on the API keys in .env
+ */
+const getAIProvider = (userContext) => {
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
+
+  // 1. Detect Provider Priority
+  let providerType = "gemini";
+  let apiKey = geminiKey;
+
+  if (openaiKey) {
+    providerType = "openai";
+    apiKey = openaiKey;
+  } else if (geminiKey && geminiKey.startsWith("sk-")) {
+    providerType = "openai";
+    apiKey = geminiKey;
+  } else if (geminiKey && geminiKey.startsWith("nvapi-")) {
+    providerType = "nvidia";
+    apiKey = geminiKey;
+  }
+
+  if (apiKey && apiKey.startsWith("nvapi-")) {
+    providerType = "nvidia";
+  } else if (apiKey && apiKey.startsWith("sk-")) {
+    providerType = "openai";
+  }
+
+  // 2. Persona / System Instruction
+  const systemInstruction = `You are Sage, a legendary AI Tutor in the "LevelUp Learning" gamified platform. 
+  Subject Expertise: Web Development, Data Science, Math/Aptitude, English, Agentic AI, DSA, Mathematics, Chemistry, and Physics.
+  Student Info: ${userContext?.username || 'Warrior'}, Level ${userContext?.level || 1}.
+  Your Teacher Methodology:
+  1. Explain concepts simply and clearly using gaming metaphors (quests, buffs, dungeon loot).
+  2. If a student asks for an answer, give a HINT or a nudge first. Don't just give the solution immediately.
+  3. Be exceptionally friendly, motivating, and encouraging.
+  4. Keep responses high-impact but concise (max 3-4 sentences).
+  5. Use emojis to fit the gamified theme (⚔️, 📜, 🛡️, 💎).`;
+
+  return { providerType, apiKey, systemInstruction };
+};
 
 /**
  * POST /api/tutor/chat
- * Main chat interaction with "Sage"
  */
 const chat = async (req, res) => {
   try {
     const { messages, userContext } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
+    const { providerType, apiKey, systemInstruction } = getAIProvider(userContext);
 
-    // 1. Fallback check for missing API Key
     if (!apiKey) {
-      console.warn("⚠️ GEMINI_API_KEY is missing in .env.");
       return res.json({
-        reply: "⚡ I'm Sage, your AI Tutor! I'm currently in 'Practice Mode' because my scrolls of power (API Key) are missing. Connect them to unlock my full wisdom!"
+        reply: "⚡ I'm Sage, your AI Tutor! To unlock my wisdom, please add a Gemini, OpenAI, or NVIDIA API key to your .env file."
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    if (providerType === "gemini") {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction });
+      const history = (messages || []).slice(0, -1).map(m => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.content }]
+      }));
+      const lastMessage = messages[messages.length - 1]?.content || "Hello!";
+      const chatSession = model.startChat({ history });
+      const result = await chatSession.sendMessage(lastMessage);
+      return res.json({ reply: result.response.text().trim() });
+    } else {
+      // OpenAI or NVIDIA NIM
+      const config = { apiKey };
+      if (providerType === "nvidia") {
+        config.baseURL = "https://integrate.api.nvidia.com/v1";
+      }
+      
+      const openai = new OpenAI(config);
+      const history = (messages || []).map(m => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.content
+      }));
 
-    // 2. Construct gamified System Prompt
-    const systemPrompt = `You are Sage, an enthusiastic AI tutor in a gamified learning platform called LevelUp Learning.
-You help students with Web Development, Math/Aptitude, English, and Data Science.
-The student is named ${userContext?.username || 'Warrior'}, currently at Level ${userContext?.level || 1} with ${userContext?.xp || 0} XP.
-Tone: Gamified, encouraging, very concise (2-4 sentences max).
-Style: Use gaming metaphors (quests, dungeons, buffs) and emojis. Always frame learning as an adventure.
+      const response = await openai.chat.completions.create({
+        model: providerType === "nvidia" ? "meta/llama-3.1-405b-instruct" : "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemInstruction },
+          ...history
+        ],
+        max_tokens: 300
+      });
 
----
-CONVERSATION HISTORY:
-`;
-
-    // 3. Convert messages into a readable conversation string (as requested)
-    const conversation = (messages || [])
-      .map((m) => `${m.role === "user" ? "Warrior" : "Sage"}: ${m.content}`)
-      .join("\n");
-
-    const finalPrompt = `${systemPrompt}${conversation}\nSage:`;
-
-    // 4. Generate Content (Stateless mode with explicit role wrapping to avoid API errors)
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
-    });
-    const reply = result.response.text().trim();
-
-    res.json({ reply });
+      return res.json({ reply: response.choices[0].message.content.trim() });
+    }
 
   } catch (err) {
-    console.error("Sage Tutor Error:", err.message);
-    res.status(500).json({
-      reply: "⚡ My magical connection flickered. A dragon must be chewing on the cables! Please try again in a moment."
-    });
+    console.error("Sage Chat Error:", err);
+    let errorMessage = "⚡ My magical connection flickered. Please try again!";
+    if (err.message.includes("API key")) errorMessage = "🚫 Your API Key appears invalid. Please check your .env settings.";
+    res.status(500).json({ reply: errorMessage });
   }
 };
 
 /**
  * POST /api/tutor/explain
- * Simple diagnostic explanations for wrong answers
  */
 const explain = async (req, res) => {
   try {
     const { question, wrongAnswer, correctAnswer, explanation } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
+    const { providerType, apiKey } = getAIProvider({});
 
     if (!apiKey) {
-      return res.json({
-        reply: explanation || "To unlock my simplified scrolls, set the GEMINI_API_KEY! 📜"
-      });
+      return res.json({ reply: explanation || "To unlock my simplified scrolls, add an API key! 📜" });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = `Student failed a trial phase. Explain the concept simply in 2 sentences.
+    Question: ${question}
+    Wrong Choice: ${wrongAnswer}
+    Correct Truth: ${correctAnswer}
+    Sage's Goal: Bridge the gap with a simple explanation and a motivating emoji.`;
 
-    const prompt = `A student answered a quiz question incorrectly. Explain the concept simply in 2-3 sentences.
-Tone: Encouraging, positive, and clear. Use an emoji.
-Question: ${question}
-Victim's Choice: ${wrongAnswer}
-Correct Truth: ${correctAnswer}
-Sage's Hint: ${explanation}`;
-
-    const result = await model.generateContent(prompt);
-    const reply = result.response.text().trim();
-
-    res.json({ reply });
+    if (providerType === "gemini") {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt);
+      res.json({ reply: result.response.text().trim() });
+    } else {
+      const config = { apiKey };
+      if (providerType === "nvidia") config.baseURL = "https://integrate.api.nvidia.com/v1";
+      const openai = new OpenAI(config);
+      const response = await openai.chat.completions.create({
+        model: providerType === "nvidia" ? "meta/llama-3.1-405b-instruct" : "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 200
+      });
+      res.json({ reply: response.choices[0].message.content.trim() });
+    }
 
   } catch (err) {
-    console.error("Sage Explanation Error:", err.message);
-    res.status(500).json({
-      reply: explanation || "A glitch in the matrix! Here is the base hint: " + explanation
-    });
+    console.error("Sage Explanation Error:", err);
+    res.status(500).json({ reply: explanation || "A glitch in the matrix!" });
   }
 };
 

@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const TIMEOUT  = 15000;
 
 /**
@@ -129,6 +129,13 @@ export const fetchQuestsList = async () => {
   return await apiFetch('/quests');
 };
 
+export const generateAIQuiz = async (subject, level) => {
+  return await apiFetch('/quests/generate', {
+    method: 'POST',
+    body: JSON.stringify({ subject, level }),
+  });
+};
+
 export const fetchQuestDetail = async (questId) => {
   return await apiFetch(`/quests/${questId}`);
 };
@@ -169,7 +176,6 @@ export const finalizeQuest = async (questId, score) => {
   });
 };
 
-// ─── AI Tutor ────────────────────────────────────────────────────────────────
 export const sendMessageToTutor = async (messages, userContext, getToken) => {
   try {
     return await apiFetch('/tutor/chat', {
@@ -177,7 +183,18 @@ export const sendMessageToTutor = async (messages, userContext, getToken) => {
       body: JSON.stringify({ messages, userContext }),
     }, getToken);
   } catch {
-    return { reply: "⚡ The AI Tutor is resting. Please try again in a moment!" };
+    return { reply: "The AI Tutor is resting. Please try again in a moment!" };
+  }
+};
+
+export const fetchAIExplanation = async (question, options, correctAnswer, subject, level) => {
+  try {
+    return await apiFetch('/tutor/explain', {
+      method: 'POST',
+      body: JSON.stringify({ question, options, correctAnswer, subject, level }),
+    });
+  } catch {
+    return { explanation: "Focus, warrior. Review the sacred texts and try again." };
   }
 };
 

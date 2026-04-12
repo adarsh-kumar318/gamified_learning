@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Star, Lock, Flame } from 'lucide-react';
 
 export default function LevelNode({ quest, status, index, onClick, isBoss }) {
   const isCompleted = status === 'completed';
@@ -58,7 +59,7 @@ export default function LevelNode({ quest, status, index, onClick, isBoss }) {
           />
         </svg>
 
-        {/* The Core Orb 🔮 */}
+        {/* The Core Orb */}
         <div className={`
           relative z-10 flex items-center justify-center
           ${isBoss ? 'w-16 h-16 m-3' : 'w-12 h-12 m-3'}
@@ -69,7 +70,7 @@ export default function LevelNode({ quest, status, index, onClick, isBoss }) {
           }
         `}>
           <div className={`font-black ${isBoss ? 'text-2xl' : 'text-xl'} ${isLocked ? 'text-text3' : 'text-white'}`}>
-            {isCompleted ? '⭐' : isLocked ? '🔒' : (isBoss ? '🔥' : index + 1)}
+            {isCompleted ? <Star size={20} fill="currentColor" /> : isLocked ? <Lock size={18} /> : (isBoss ? <Flame size={24} fill="currentColor" /> : index + 1)}
           </div>
 
           {/* Core Pulse for available nodes */}
@@ -98,3 +99,4 @@ export default function LevelNode({ quest, status, index, onClick, isBoss }) {
     </motion.div>
   );
 }
+

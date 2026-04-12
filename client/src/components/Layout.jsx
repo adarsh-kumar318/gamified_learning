@@ -1,13 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import Nav from './Nav';
 import BackgroundLayer from './BackgroundLayer';
+import { 
+  Home, 
+  Swords, 
+  Users, 
+  Trophy, 
+  Brain 
+} from 'lucide-react';
 
 const BOTTOM_ITEMS = [
-  { id: "dashboard", icon: "🏠", label: "Home" },
-  { id: "quests",    icon: "⚔️", label: "Quests" },
-  { id: "social",   icon: "🤝", label: "Social" },
-  { id: "leaderboard", icon: "🏆", label: "Ranks" },
-  { id: "tutor",    icon: "🧠", label: "Tutor" },
+  { id: "dashboard", icon: Home, label: "Home" },
+  { id: "quests",    icon: Swords, label: "Quests" },
+  { id: "social",   icon: Users, label: "Social" },
+  { id: "leaderboard", icon: Trophy, label: "Ranks" },
+  { id: "tutor",    icon: Brain, label: "Tutor" },
 ];
 
 export default function Layout({ 
@@ -67,14 +74,14 @@ export default function Layout({
 
         {/* ─── Mobile Bottom Navigation Bar ──────────────────────────── */}
         <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
-          {BOTTOM_ITEMS.map(({ id, icon, label }) => (
+          {BOTTOM_ITEMS.map(({ id, icon: Icon, label }) => (
             <button
               key={id}
               onClick={() => goTo(id)}
               className={activeNav === id ? 'active' : ''}
               aria-label={label}
             >
-              <span className="nav-icon">{icon}</span>
+              <span className="nav-icon"><Icon size={20} /></span>
               <span>{label}</span>
               {id === 'social' && socialNotification && (
                 <span
@@ -89,3 +96,4 @@ export default function Layout({
     </div>
   );
 }
+

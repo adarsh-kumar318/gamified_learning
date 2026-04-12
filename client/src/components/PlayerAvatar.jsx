@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
+import { Swords } from 'lucide-react';
 
-export default function PlayerAvatar({ position, emoji = "⚔️", username }) {
+export default function PlayerAvatar({ position, emoji, username }) {
   if (!position) return null;
 
   return (
@@ -24,7 +25,7 @@ export default function PlayerAvatar({ position, emoji = "⚔️", username }) {
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          {/* Movement Trail Glow 💫 */}
+          {/* Movement Trail Glow */}
           <motion.div 
             animate={{ 
               scale: [1, 1.4, 1],
@@ -34,9 +35,11 @@ export default function PlayerAvatar({ position, emoji = "⚔️", username }) {
             className="absolute inset-0 bg-accent rounded-full blur-2xl -z-10"
           />
 
-          {/* Avatar Sprite 🛡️ */}
+          {/* Avatar Sprite */}
           <div className="w-14 h-14 flex items-center justify-center text-3xl bg-surface/60 rounded-2xl border-2 border-accent/80 shadow-[0_15px_35px_rgba(124,58,237,0.6)] backdrop-blur-xl relative overflow-hidden">
-            <div className="relative z-10">{emoji}</div>
+            <div className="relative z-10">
+              {emoji ? emoji : <Swords size={32} className="text-white" />}
+            </div>
             {/* Inner Sparkle */}
             <motion.div 
               animate={{ x: ['-100%', '200%'] }}
@@ -57,3 +60,4 @@ export default function PlayerAvatar({ position, emoji = "⚔️", username }) {
     </motion.div>
   );
 }
+
