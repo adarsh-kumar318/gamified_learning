@@ -1,0 +1,56 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        title: ['Cinzel', 'serif'],
+        body: ['Exo 2', 'sans-serif'],
+      },
+      colors: {
+        bg: '#0a0a1a',
+        bg2: '#0f0f2a',
+        bg3: '#141428',
+        surface: '#1a1a35',
+        surface2: '#1f1f40',
+        surface3: '#242450',
+        accent: '#7c3aed',
+        accent2: '#a855f7',
+        gold: '#f59e0b',
+        gold2: '#fcd34d',
+        teal: '#06b6d4',
+        green2: '#10b981',
+        pink2: '#ec4899',
+        text1: '#e2e8f0',
+        text2: '#94a3b8',
+        text3: '#64748b',
+      },
+      keyframes: {
+        popIn:    { '0%': { opacity: 0, transform: 'translateY(-10px) scale(0.8)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
+        popOut:   { '0%': { opacity: 1 }, '100%': { opacity: 0, transform: 'translateY(-20px)' } },
+        fadeIn:   { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+        slideUp:  { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+        levelUp:  { '0%': { transform: 'scale(0.5) rotate(-5deg)', opacity: 0 }, '100%': { transform: 'scale(1) rotate(0deg)', opacity: 1 } },
+        bounce2:  { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(-10px)' } },
+        pulse2:   { '0%,100%': { boxShadow: '0 0 20px rgba(245,158,11,0.3)' }, '50%': { boxShadow: '0 0 30px rgba(245,158,11,0.6)' } },
+        msgIn:    { '0%': { opacity: 0, transform: 'translateY(8px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+        borderGlow: { '0%,100%': { borderColor: '#7c3aed' }, '50%': { borderColor: '#a855f7' } },
+      },
+      animation: {
+        'pop-in':     'popIn 0.3s ease',
+        'pop-out':    'popOut 0.5s ease 1.5s forwards',
+        'fade-in':    'fadeIn 0.2s ease',
+        'slide-up':   'slideUp 0.3s ease',
+        'level-up':   'levelUp 0.5s ease',
+        'bounce-alt': 'bounce2 0.6s ease infinite alternate',
+        'pulse-gold': 'pulse2 2s ease infinite',
+        'msg-in':     'msgIn 0.2s ease',
+        'border-glow':'borderGlow 2s ease infinite',
+      },
+    },
+  },
+  plugins: [],
+}

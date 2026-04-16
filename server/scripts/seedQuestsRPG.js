@@ -1,0 +1,89 @@
+require('dotenv').config();
+const { db } = require('../utils/firebase'); // Reusing the utils/firebase for admin SDK
+
+const generateQuestions = (path, questLevel, count = 5) => {
+  const questions = [];
+  for (let i = 1; i <= count; i++) {
+    const correctIdx = Math.floor(Math.random() * 4);
+    
+    const templates = [
+      ["Advanced Architecture", "Legacy Support", "Cloud Security", "Real-time Optimization"],
+      ["Frontend Mastery", "Backend Logic", "Fullstack Integration", "API Design"],
+      ["Data Integrity", "Parallel Processing", "Algorithm Efficiency", "Memory Management"],
+      ["User Experience", "Visual Design", "Accessibility", "Responsive Layouts"]
+    ];
+    
+    const set = templates[i % templates.length];
+    const finalOptions = set.map((text, idx) => `Choice ${idx + 1}: ${text} in ${path}`);
+
+    questions.push({
+      question: `[${path.toUpperCase()} - Phase ${questLevel}] Quest ${i}: Identify the optimal strategy for ${path} in this tier.`,
+      options: finalOptions,
+      correctAnswer: correctIdx,
+      xpReward: i === 5 ? 100 : 20, 
+      explanation: `Core principles of ${path} demand mastery of ${finalOptions[correctIdx].split(': ')[1]}.`
+    });
+  }
+  return questions;
+};
+
+const seedQuests = async () => {
+  try {
+    console.log('Connected to Firestore for Cinematic RPG Seeding... 🧬');
+
+    // Delete existing quests using a batch (for hackathon size it's fine natively looping)
+    const existingQuests = await db.collection('quests').get();
+    let batch = db.batch();
+    existingQuests.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+
+    const paths = ['webdev', 'aptitude', 'english', 'datascience', 'agenticai', 'dsa', 'mathematics', 'chemistry', 'physics'];
+    const totalLevelsPerPath = 50;
+
+    const quests = [];
+
+    paths.forEach(path => {
+      for (let lvl = 1; lvl <= totalLevelsPerPath; lvl++) {
+        const isBoss = lvl % 5 === 0;
+        quests.push({
+          id: `${path}_lvl_${lvl}`,
+          title: isBoss ? `BOSS: ${path.toUpperCase()} GUARDIAN` : `${path.toUpperCase()} TRIAL: LEVEL ${lvl}`,
+          level: lvl,
+          pathId: path,
+          type: path,
+          description: isBoss 
+            ? "A legendary guardian blocks your path. Defeat them to unlock the next region!" 
+            : `Prove your skills in ${path} and advance along the mystical road.`,
+          questions: generateQuestions(path, lvl, 5),
+          isBoss
+        });
+      }
+    });
+
+    console.log(`Saving ${quests.length} Quests to Firestore... this may take a moment.`);
+    
+    // Firestore allows batch operations of 500 documents at a time
+    for (let i = 0; i < quests.length; i += 500) {
+        const chunk = quests.slice(i, i + 500);
+        let writeBatch = db.batch();
+        
+        chunk.forEach(q => {
+            const docRef = db.collection('quests').doc(q.id);
+            writeBatch.set(docRef, q);
+        });
+        
+        await writeBatch.commit();
+        console.log(`Committed chunk ${i} to ${i + chunk.length}`);
+    }
+
+    console.log(`✅ Successfully seeded ${quests.length} Quests (5 questions each).`);
+    process.exit(0);
+  } catch (err) {
+    console.error('❌ Seeding failed:', err);
+    process.exit(1);
+  }
+};
+
+seedQuests();
