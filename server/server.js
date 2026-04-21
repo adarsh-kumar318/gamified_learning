@@ -97,10 +97,10 @@ app.use("/api/questions",   questionRoutes);
 
 /* ─── Static files (production only) ───────────────────────────────────────── */
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../client/dist")));
+  app.use(express.static(path.join(__dirname, "../public")));
   app.get("*", (req, res, next) => {
     if (req.path.startsWith("/api")) return next();
-    res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
+    res.sendFile(path.resolve(__dirname, "../public/index.html"));
   });
 }
 
