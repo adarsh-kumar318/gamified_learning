@@ -1,0 +1,72 @@
+services:
+  # ─── Backend — Node.js Web Service ────────────────────────────────────────────
+  - type: web
+    name: levelup-learning-backend
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CLIENT_URL
+        value: https://levelup-learning-frontend.onrender.com
+      - key: JWT_SECRET
+        sync: false   # Paste your JWT secret in the Render dashboard
+      - key: FIREBASE_PROJECT_ID
+        value: levelup-learning-ca235
+      - key: FIREBASE_CLIENT_EMAIL
+        value: firebase-adminsdk-fbsvc@levelup-learning-ca235.iam.gserviceaccount.com
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false   # Paste the full private key (with quotes) in Render dashboard
+      - key: FIREBASE_STORAGE_BUCKET
+        value: levelup-learning-ca235.firebasestorage.app
+      - key: FIREBASE_DATABASE_URL
+        value: https://levelup-learning-ca235-default-rtdb.firebaseio.com
+      - key: GEMINI_API_KEY
+        sync: false   # Paste your Gemini API key in Render dashboard
+      - key: SUPABASE_URL
+        value: https://ukynfkxstautxztjhnfg.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false   # Paste your Supabase service role key in Render dashboard
+      - key: SOCKET_PING_TIMEOUT
+        value: 5000
+      - key: SOCKET_PING_INTERVAL
+        value: 10000
+
+  # ─── Frontend — Vite/React Static Site ────────────────────────────────────────
+  - type: web
+    name: levelup-learning-frontend
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://levelup-learning-backend.onrender.com/api
+      - key: VITE_API_BASE_URL
+        value: https://levelup-learning-backend.onrender.com
+      - key: VITE_FIREBASE_API_KEY
+        value: AIzaSyBzaJDTIdp2R4Ez85itqlzURQYExj5tqfw
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        value: levelup-learning-ca235.firebaseapp.com
+      - key: VITE_FIREBASE_PROJECT_ID
+        value: levelup-learning-ca235
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        value: levelup-learning-ca235.firebasestorage.app
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        value: 853996529886
+      - key: VITE_FIREBASE_APP_ID
+        value: 1:853996529886:web:a2a35c92ff796907a4ba4f
+      - key: VITE_FIREBASE_MEASUREMENT_ID
+        value: G-SD3BZCLJWH
+      - key: VITE_SUPABASE_URL
+        value: https://ukynfkxstautxztjhnfg.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false   # Paste your Supabase anon key in Render dashboard
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
