@@ -11,6 +11,8 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: MONGODB_URI
+        sync: false   # Paste your MongoDB Atlas connection string in Render dashboard
       - key: CLIENT_URL
         value: https://levelup-learning-frontend.onrender.com
       - key: JWT_SECRET

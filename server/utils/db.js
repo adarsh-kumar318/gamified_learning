@@ -1,14 +1,19 @@
-// utils/db.js — Replaced by Firebase
-const { db } = require('./firebase');
+const mongoose = require('mongoose');
 
 const connectDB = async () => {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    console.error('❌ MONGODB_URI is not set. Check your environment variables.');
+    process.exit(1);
+  }
+
   try {
-    // Just verifying firestore is accessible
-    await db.collection('_system_').doc('ping').set({ lastPing: new Date() });
-    console.log('✅ Firestore connected successfully');
+    await mongoose.connect(uri);
+    console.log('✅ MongoDB connected successfully');
   } catch (err) {
-    console.error('❌ Firestore connection error! Check your credentials.');
-    console.error(`Message: ${err.message}`);
+    console.error('❌ MongoDB connection error:', err.message);
+    process.exit(1);
   }
 };
 
