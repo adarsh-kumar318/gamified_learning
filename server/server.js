@@ -100,6 +100,10 @@ app.get("/", (_req, res) => {
   res.send("🚀 LevelUp Learning API is running!");
 });
 
+app.head("/", (_req, res) => {
+  res.status(200).end();
+});
+
 /* ─── Static files (production only) ───────────────────────────────────────── */
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../public")));
