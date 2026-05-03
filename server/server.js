@@ -95,6 +95,11 @@ app.use("/api/profile",     profileRoutes);
 app.use("/api/friends",     friendRoutes);
 app.use("/api/questions",   questionRoutes);
 
+/* ─── Base Route ────────────────────────────────────────────────────────────── */
+app.get("/", (_req, res) => {
+  res.send("🚀 LevelUp Learning API is running!");
+});
+
 /* ─── Static files (production only) ───────────────────────────────────────── */
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../public")));
