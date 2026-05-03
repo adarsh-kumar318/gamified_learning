@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://levelup-learning-backend.onrender.com/api';
 const TIMEOUT  = 15000;
 
 /**
